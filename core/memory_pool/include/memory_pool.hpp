@@ -6,4 +6,4 @@
 
 #include "pool.hpp"
 #include "singleton_pool.hpp"
-// TODO : #include "object_pool.hpp"
+#include "object_pool.hpp"

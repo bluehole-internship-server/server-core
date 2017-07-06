@@ -7,14 +7,9 @@
 #include <mutex>
 
 #include "pool.hpp"
+#include "null_mutex.hpp"
 
 namespace core {
-
-class null_mutex {
-public:
-    inline void lock() {};
-    inline void unlock() {};
-};
 
 template <typename Tag,
     unsigned RequestedSize = sizeof(Tag),
