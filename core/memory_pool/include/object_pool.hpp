@@ -52,7 +52,7 @@ public:
     }
 
     bool PurgeMemory()
-    {        
+    {
         std::lock_guard<Mutex> g(mutex_);
         return pool().PurgeMemory();
     }
