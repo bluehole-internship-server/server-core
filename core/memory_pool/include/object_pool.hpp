@@ -7,26 +7,28 @@
 #include "pool.hpp"
 #include "null_mutex.hpp"
 
+#include <iostream>
+
 namespace core {
 
 template<typename T,
     unsigned RequestedSize = sizeof(T),
     typename Mutex = null_mutex>
-class ObjectPool : protected Pool {
+class ObjectPool : public Pool {
 public:
     explicit ObjectPool() : Pool(RequestedSize) { }
     ~ObjectPool() {}
     
-    T* Malloc()
+    virtual void* Malloc() override
     {
         std::lock_guard<Mutex> g(mutex_);
-        return static_cast<T*>(pool().Malloc());
+        return static_cast<T*>(Pool::Malloc());
     }
 
-    void Free(void* const chunk)
+    virtual void Free(void* const chunk) override
     {
         std::lock_guard<Mutex> g(mutex_);
-        pool().Free(chunk);
+        Pool::Free(chunk);
     }
 
     
@@ -34,12 +36,12 @@ public:
     {   // T needs to implement constructor with r value ref
         // how about using template function?
         std::lock_guard<Mutex> g(mutex_);
-        T* ret = static_cast<T*>(pool().Malloc());
+        T* ret = static_cast<T*>(Pool::Malloc());
         
         try {
             new (ret) T(std::move(t));
         } catch (...) {
-            pool().Free(ret);
+            Pool::Free(ret);
             ret = nullptr;
         }
         return ret;
@@ -48,20 +50,22 @@ public:
     void Destroy(T* const chunk)
     {
         chunk->~T();
-        pool().Free(chunk);
+        Pool::Free(chunk);
     }
 
     bool PurgeMemory()
     {
         std::lock_guard<Mutex> g(mutex_);
-        return pool().PurgeMemory();
+        return Pool::PurgeMemory();
     }
 
 private:
+    /* deprecated
     Pool& pool()
     {
         return *this;
     }
+    */
 
     Mutex mutex_;
 };

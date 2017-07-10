@@ -18,7 +18,7 @@
 int main()
 {
     TestStruct T;
-    BenchStruct B;
+    BenchStruct B(8);
 
     T.TestObjectPool();
     T.TestFastAllocator();

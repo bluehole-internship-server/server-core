@@ -27,7 +27,7 @@ public:
     {
     }
 
-    void* Malloc()
+    virtual void* Malloc() 
     {
         if (!Empty()) {
             return storage_.malloc();
@@ -46,7 +46,7 @@ public:
         return true;
     }
 
-    inline void Free(void* const chunk)
+    virtual inline void Free(void* const chunk)
     {
         storage_.free(chunk);
     }
