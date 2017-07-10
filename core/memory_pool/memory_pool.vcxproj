@@ -150,6 +150,7 @@
     <ClInclude Include="include\pool.hpp" />
     <ClInclude Include="include\segregated_storage.hpp" />
     <ClInclude Include="include\singleton_pool.hpp" />
+    <ClInclude Include="src\test_and_bench.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\test.cpp" />

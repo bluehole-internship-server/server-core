@@ -79,6 +79,7 @@ public:
 
 private:
     Pool pool_;
+    // pool per one STL container
 };
 }
 

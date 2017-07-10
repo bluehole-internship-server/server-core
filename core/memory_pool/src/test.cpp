@@ -9,52 +9,23 @@
 #include <cassert>
 #include <map>
 #include <list>
+#include <vector>
 
 #include "memory_pool.hpp"
 
-struct ObjectPoolTest {
-public:
-    void TestConstruct()
-    {
-        object_pool_.PurgeMemory();
-        
-        const int num_routine = 1000;
-        int count = 0;
-
-        for (int i = 0; i < num_routine; i++) {
-            object_pool_.Construct(TestClass(count));
-        }
-        assert(count == 2000);
-    }
-
-private:
-    class TestClass {
-    public:
-        TestClass(int &count) : count_(count)
-        { 
-            count_++;
-        }
-
-        TestClass(TestClass &a) : count_(a.count_)
-        {
-        }
-        
-        TestClass(TestClass &&a) : count_(a.count_)
-        {
-            count_++;
-        }
-        
-        ~TestClass() { }
-        int &count_;
-    };
-    core::ObjectPool<TestClass> object_pool_;
-};
+#include "test_and_bench.h"
 
 int main()
 {
-    ObjectPoolTest T;
+    TestStruct T;
+    BenchStruct B;
 
-    T.TestConstruct();
+    T.TestObjectPool();
+    T.TestFastAllocator();
+
     std::cout << "May be everything is fine.\n";
+
+    // print results of bench marks
+
     return 0;
 }
