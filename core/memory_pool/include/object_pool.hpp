@@ -7,8 +7,6 @@
 #include "pool.hpp"
 #include "null_mutex.hpp"
 
-#include <iostream>
-
 namespace core {
 
 template<typename T,

@@ -30,7 +30,7 @@ public:
     }
    
     size_type max_size() const throw() {
-        return std::numeric_limits<size_t>::max() / sizeof(T);
+        return (std::numeric_limits<size_t>::max)() / sizeof(T);
     }
 
     virtual pointer allocate(size_type n, const void* = 0) = 0;
@@ -79,7 +79,7 @@ public:
 
 private:
     Pool pool_;
-    // pool per one STL container
+    // pool per one STL container instance
 };
 }
 
