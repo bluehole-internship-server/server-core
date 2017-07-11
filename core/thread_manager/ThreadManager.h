@@ -14,6 +14,8 @@ public:
     ThreadManager();
     ~ThreadManager();
     
+    VOID SetMinimumWorker(DWORD size);
+    VOID SetMaximumWorker(DWORD size);
     BOOL AddEnvironment(PCHAR name);
     BOOL AddWork(PTP_WORK_CALLBACK work, PVOID parameter, PCHAR environment_name);
     BOOL JoinAll();

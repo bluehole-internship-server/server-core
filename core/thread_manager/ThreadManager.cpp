@@ -19,6 +19,15 @@ ThreadManager::ThreadManager()
 ThreadManager::~ThreadManager()
 {
 }
+VOID ThreadManager::SetMinimumWorker(DWORD size)
+{
+    BOOL result = SetThreadpoolThreadMinimum(threadpool_, size);
+    _ASSERT(result);
+}
+VOID ThreadManager::SetMaximumWorker(DWORD size)
+{
+    SetThreadpoolThreadMaximum(threadpool_, size);
+}
 BOOL ThreadManager::AddEnvironment(PCHAR name)
 {
     return TRUE;
