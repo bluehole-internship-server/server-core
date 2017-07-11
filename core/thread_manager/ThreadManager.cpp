@@ -2,63 +2,52 @@
 
 namespace core
 {
-
 ThreadManager::ThreadManager()
 {
-    GetSystemInfo(&system_info);
-    maximum_thread_count = system_info.dwNumberOfProcessors * 2 + 2;
-}
+    threadpool_ = CreateThreadpool(NULL);
 
+    GetSystemInfo(&systemInfo_);
+    SetThreadpoolThreadMaximum(threadpool_, systemInfo_.dwNumberOfProcessors * 2);
+    BOOL success = SetThreadpoolThreadMinimum(threadpool_, 1);
+    _ASSERT(success);
+
+    InitializeThreadpoolEnvironment(&defaultCallbackEnvironment_);
+    // do Move
+    defaultCallbackEnvironment_.CleanupGroup = CreateThreadpoolCleanupGroup();
+    SetThreadpoolCallbackPool(&defaultCallbackEnvironment_, threadpool_);
+}
 ThreadManager::~ThreadManager()
 {
 }
-
-BOOL ThreadManager::set_maximum_thread_count(int)
+BOOL ThreadManager::AddEnvironment(PCHAR name)
 {
-    return 0;
+    return TRUE;
 }
-
-int ThreadManager::get_usable_thread_count()
+BOOL ThreadManager::AddWork(PTP_WORK_CALLBACK work, PVOID parameter, PCHAR environment_name)
 {
-    return maximum_thread_count - current_thread_count;
-}
+    
+    TP_CALLBACK_ENVIRON targetEnvironment;
+    PTP_WORK newWork;
 
-ThreadManager::Iocp ThreadManager::create_iocp(char * name, int concurrent, unsigned (*function)(LPVOID))
-{
-    Iocp new_iocp;
-    int real_thread_pool_size = concurrent * 2;
-    if (current_thread_count + real_thread_pool_size > maximum_thread_count)
-        new_iocp.iocp = NULL;
-    else
-    {
-        current_thread_count += real_thread_pool_size;
-        new_iocp.iocp = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, concurrent);
-        new_iocp.tp.resize(real_thread_pool_size);
-        for (HANDLE th : new_iocp.tp)
-            th = (HANDLE)_beginthreadex(NULL, 0, (_beginthreadex_proc_type)function, new_iocp.iocp, 0, NULL);
-        iocps.insert({ name, new_iocp });
+    if (environment_name != NULL) {
+        _ASSERT(callbackEnvironments_.find(environment_name) != callbackEnvironments_.end());
+        newWork = CreateThreadpoolWork(work, parameter, &(callbackEnvironments_[environment_name]));
     }
-    return new_iocp;
-}
+    else {
+        newWork = CreateThreadpoolWork(work, parameter, &defaultCallbackEnvironment_);
+    }
+    _ASSERT(newWork != NULL);
 
-BOOL ThreadManager::associate_iocp(char * name, HANDLE device, DWORD key)
-{
-    return CreateIoCompletionPort(device, iocps[name].iocp, key, 0) == iocps[name].iocp;
-}
+    SubmitThreadpoolWork(newWork);
 
-BOOL ThreadManager::remove_iocp(char * name)
-{
-    return iocps.erase(name) == 1;
+    return TRUE;
 }
-
-BOOL ThreadManager::pause_iocp(char * name)
+BOOL ThreadManager::JoinAll()
 {
+    CloseThreadpoolCleanupGroupMembers(defaultCallbackEnvironment_.CleanupGroup, FALSE, NULL);
+    for (auto environment : callbackEnvironments_) {
+        CloseThreadpoolCleanupGroupMembers((environment.second.CleanupGroup), FALSE, NULL);
+    }
     return 0;
 }
-
-BOOL ThreadManager::resume_iocp(char * name)
-{
-    return 0;
-}
-
 }
