@@ -47,6 +47,7 @@ public:
             ::free(first_);
             first_ = next;
         }
+        storage().first_ = nullptr;
         return true;
     }
 
