@@ -1,10 +1,6 @@
 #pragma once
 #include <Windows.h>
-#include <process.h>
 #include <unordered_map>
-#include <vector>
-#include <queue>
-#include <functional>
 
 namespace core 
 {
@@ -17,7 +13,7 @@ public:
     VOID SetMinimumWorker(DWORD size);
     VOID SetMaximumWorker(DWORD size);
     BOOL AddEnvironment(PCHAR name);
-    BOOL AddWork(PTP_WORK_CALLBACK work, PVOID parameter, PCHAR environment_name);
+    BOOL AddWork(PTP_WORK_CALLBACK work, PVOID parameter, DWORD amount, PCHAR environment_name);
     BOOL JoinAll();
 
 private:

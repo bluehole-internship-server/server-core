@@ -32,22 +32,25 @@ BOOL ThreadManager::AddEnvironment(PCHAR name)
 {
     return TRUE;
 }
-BOOL ThreadManager::AddWork(PTP_WORK_CALLBACK work, PVOID parameter, PCHAR environment_name)
-{
-    
-    TP_CALLBACK_ENVIRON targetEnvironment;
-    PTP_WORK newWork;
+BOOL ThreadManager::AddWork(PTP_WORK_CALLBACK work, PVOID parameter, DWORD amount, PCHAR environment_name)
+{    
+    BOOL hasName = FALSE;
 
     if (environment_name != NULL) {
         _ASSERT(callbackEnvironments_.find(environment_name) != callbackEnvironments_.end());
-        newWork = CreateThreadpoolWork(work, parameter, &(callbackEnvironments_[environment_name]));
+        hasName = TRUE;
     }
-    else {
-        newWork = CreateThreadpoolWork(work, parameter, &defaultCallbackEnvironment_);
-    }
-    _ASSERT(newWork != NULL);
 
-    SubmitThreadpoolWork(newWork);
+    for (DWORD i = 0; i < amount; ++i) {
+        PTP_WORK newWork;
+        if (hasName)
+            newWork = CreateThreadpoolWork(work, parameter, &(callbackEnvironments_[environment_name]));
+        else
+            newWork = CreateThreadpoolWork(work, parameter, &defaultCallbackEnvironment_);
+        _ASSERT(newWork != NULL);
+        
+        SubmitThreadpoolWork(newWork);
+    }
 
     return TRUE;
 }
