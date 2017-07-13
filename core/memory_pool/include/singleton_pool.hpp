@@ -19,13 +19,13 @@ public:
     static void* Malloc()
     {
         std::lock_guard<Mutex> g(mutex_);
-        return get_pool().Malloc();
+        return pool_.Malloc();
     }
 
     static void Free(void* const chunk)
     {
         std::lock_guard<Mutex> g(mutex_);
-        get_pool().Free(chunk);
+        pool_.Free(chunk);
     }
 
     static bool PurgeMemory()

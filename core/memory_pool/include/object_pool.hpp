@@ -14,13 +14,14 @@ template<typename T,
     typename Mutex = null_mutex>
 class ObjectPool : public Pool {
 public:
-    explicit ObjectPool() : Pool(RequestedSize) { }
+    explicit ObjectPool() : Pool(RequestedSize) { spin_ = FALSE; }
     ~ObjectPool() {}
     
     virtual void* Malloc() override
     {
         std::lock_guard<Mutex> g(mutex_);
-        return static_cast<T*>(Pool::Malloc());
+        void* ret = Pool::Malloc();
+        return ret;
     }
 
     virtual void Free(void* const chunk) override
@@ -31,7 +32,7 @@ public:
 
     
     T* Construct(T&& t)
-    {   // T needs to implement constructor with r value ref
+    {   // T needs to have constructor with r value ref
         // how about using template function?
         std::lock_guard<Mutex> g(mutex_);
         T* ret = static_cast<T*>(Pool::Malloc());
@@ -65,6 +66,7 @@ private:
     }
     */
 
+    short spin_;
     Mutex mutex_;
 };
 }

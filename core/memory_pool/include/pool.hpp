@@ -15,7 +15,7 @@ namespace core {
 class Pool : private segregated_storage {
 public:
     explicit Pool(const std::size_t requested_size)
-        : next_size_(32)
+        : next_size_(64)
         , alloc_size_((std::max)(requested_size, sizeof(void*)))
         , segregated_storage((std::max)(requested_size, sizeof(void*)))
         , first_(nullptr)
@@ -47,7 +47,9 @@ public:
             ::free(first_);
             first_ = next;
         }
-        storage().first_ = nullptr;
+        next_size_ = 32;
+
+        storage().first_ = nullptr;        
         return true;
     }
 

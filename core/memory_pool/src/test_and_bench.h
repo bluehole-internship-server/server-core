@@ -78,10 +78,10 @@ public:
             this, num_routine, std::ref(pool)));
     }
 
-    double BenchSimpleAllocMT64K(int num_routine)
+    template<unsigned RequestedSize>
+    double BenchSimpleAllocMT(int num_routine)
     {
-        core::ObjectPool<Dummy64K, sizeof(Dummy64K), std::mutex> pool;
-        
+        core::ObjectPool<Dummy, RequestedSize, std::mutex> pool;
         return check_time(std::bind(&BenchStruct::simple_allocate_mt,
             this, num_routine, std::ref(pool)));
     }
@@ -91,6 +91,15 @@ public:
         core::Pool pool(size);
 
         return check_time(std::bind(&BenchStruct::simple_allocate_deallocate,
+            this, num_routine, std::ref(pool)));
+    }
+
+    template<unsigned RequestedSize>
+    double BenchSimpleAllocDeallocMT(int num_routine)
+    {
+        core::ObjectPool<Dummy, RequestedSize, std::mutex> pool;
+        return check_time(std::bind(
+            &BenchStruct::simple_allocate_deallocate_mt,
             this, num_routine, std::ref(pool)));
     }
 
@@ -110,7 +119,7 @@ public:
         return ret;
     }
 
-    double BenchMallocSimpleAllocMT64K(int num_routine)
+    double BenchMallocSimpleAllocMT(int num_routine, std::size_t size)
     {
         double ret;
         void*** ptr = new void**[num_thread_];
@@ -118,7 +127,7 @@ public:
         for (int i = 0; i < num_thread_; i++) ptr[i] = new void*[num_routine];
 
         ret = check_time(std::bind(&BenchStruct::malloc_simple_allocate_mt,
-            this, num_routine, sizeof(Dummy64K), ptr));
+            this, num_routine, size, ptr));
 
         for (int i = 0; i < num_thread_; i++) {
             for (int j = 0; j < num_routine; j++) {
@@ -138,16 +147,25 @@ public:
             this, num_routine, size));
     }
 
+    double BenchMallocSimpleAllocDeallocMT(int num_routine, std::size_t size)
+    {
+        return check_time(std::bind(
+            &BenchStruct::malloc_simple_allocate_deallocate_mt,
+            this, num_routine, size));
+    }
+
 private:
     void simple_allocate(int num_routine, core::Pool& pool);
     void simple_allocate_mt(int num_routine, core::Pool& pool);
     void simple_allocate_deallocate(int num_routine, core::Pool& pool);
-
+    void simple_allocate_deallocate_mt(int num_routine, core::Pool& pool);
    
     void malloc_simple_allocate(int num_routine, std::size_t size, void** ptr);
     void malloc_simple_allocate_mt(int num_routine, std::size_t size,
         void*** ptr);
     void malloc_simple_allocate_deallocate(int num_routine, std::size_t size);
+    void malloc_simple_allocate_deallocate_mt(int num_routine,
+        std::size_t size);
 
     double check_time(std::function<void()> func);
 
@@ -155,6 +173,7 @@ private:
     class Dummy32K { char dummy[32][1024]; };
     class Dummy16K { char dummy[16][1024]; };
     class Dummy8K { char dummy[8][1024]; };
+    class Dummy { char dummy; };
 
     int num_thread_;
 };
@@ -189,6 +208,21 @@ void BenchStruct::simple_allocate_deallocate(int num_routine,
     }
 }
 
+void BenchStruct::simple_allocate_deallocate_mt(int num_routine,
+    core::Pool &pool)
+{
+    std::thread* t = new std::thread[num_thread_];
+    for (int i = 0; i < num_thread_; i++) {
+        t[i] = std::thread([&]() {
+            this->simple_allocate_deallocate(num_routine, pool); 
+        });
+    }
+
+    for (int i = 0; i < num_thread_; i++) {
+        t[i].join();
+    }
+}
+
 void BenchStruct::malloc_simple_allocate(int num_routine,
     std::size_t size, void** ptr)
 {
@@ -219,6 +253,22 @@ void BenchStruct::malloc_simple_allocate_deallocate(int num_routine,
     for (int i = 0; i < num_routine; i++) {
         void* ptr = malloc(size);
         free(ptr);
+    }
+}
+
+void BenchStruct::malloc_simple_allocate_deallocate_mt(int num_routine,
+    std::size_t size)
+{
+    std::thread* t = new std::thread[num_thread_];
+
+    for (int i = 0; i < num_thread_; i++) {
+        t[i] = std::thread([=]() {
+            this->malloc_simple_allocate_deallocate(num_routine, size);
+        });
+    }
+
+    for (int i = 0; i < num_thread_; i++) {
+        t[i].join();
     }
 }
 

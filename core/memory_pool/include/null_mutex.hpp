@@ -8,7 +8,8 @@ namespace core {
 
 class null_mutex {
 public:
-    inline void lock() {};
-    inline void unlock() {};
+    inline void lock() {}
+    inline void unlock() {}
+    inline bool try_lock() { return true; }
 };
 }
