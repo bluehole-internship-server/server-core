@@ -1,5 +1,4 @@
 #include "Spinlock.h"
-#include <Windows.h>
 
 namespace core
 {
@@ -20,7 +19,6 @@ void Spinlock::Lock()
 			while (reader.load() != 0) {}
 			return;
 		}
-
 		Sleep(1);
 	}
 }
