@@ -2,9 +2,14 @@
 // test.cpp
 //
 
-#include "memory_pool.hpp"
+#include <iostream>
+#include <malloc.hpp>
+#include <stdlib.h>
+
+using namespace core::memory;
 
 int main()
 {
+
     return 0;
 }
