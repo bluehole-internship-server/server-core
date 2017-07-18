@@ -3,7 +3,7 @@
 
 namespace core
 {
-Spinlock::Spinlock()
+Spinlock::Spinlock() : mLockFlag(0), reader(0)
 {
 }
 
