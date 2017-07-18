@@ -4,6 +4,7 @@
 #include <thread>
 #include <functional>
 #include <future>
+
 #include "Spinlock.h"
 
 namespace core
@@ -19,7 +20,7 @@ public:
 private:
 	std::queue<std::function<void()>> tasks_;
 	std::vector<std::thread> workers_;
-	core::Spinlock spinlock_;
+	Spinlock spinlock_;
 	bool stop;
 };
 }
