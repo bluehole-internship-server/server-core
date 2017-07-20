@@ -2,7 +2,7 @@
 
 namespace core
 {
-Spinlock::Spinlock() : mLockFlag(0), reader(0)
+Spinlock::Spinlock() : lock_(0), reader_(0)
 {
 }
 
@@ -14,9 +14,9 @@ void Spinlock::Lock()
 {
 	for (;;)
 	{
-		if (mLockFlag.exchange(1) == 0)
+		if (lock_.exchange(1) == 0)
 		{
-			while (reader.load() != 0) {}
+			while (reader_.load() != 0) {}
 			return;
 		}
 		Sleep(1);
@@ -25,7 +25,7 @@ void Spinlock::Lock()
 
 void Spinlock::Unlock()
 {
-	mLockFlag.exchange(0);
+	lock_.exchange(0);
 
 }
 
@@ -33,8 +33,8 @@ void Spinlock::ReadLock()
 {
 	for (;;)
 	{
-		if (!mLockFlag) {
-			++reader;
+		if (!lock_) {
+			++reader_;
 			return;
 		}
 		Sleep(1);
@@ -43,7 +43,17 @@ void Spinlock::ReadLock()
 
 void Spinlock::ReadUnlock()
 {
-	--reader;
+	--reader_;
+}
+
+SpinlockGuard::SpinlockGuard()
+{
+	spinlock_.Lock();
+}
+
+SpinlockGuard::~SpinlockGuard()
+{
+	spinlock_.Unlock();
 }
 
 }

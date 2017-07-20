@@ -16,7 +16,17 @@ public:
 	void ReadUnlock();
 
 private:
-	std::atomic<long> mLockFlag;
-	std::atomic<long> reader;
+	std::atomic<long> lock_;
+	std::atomic<long> reader_;
+};
+
+class SpinlockGuard
+{
+public:
+	SpinlockGuard();
+	~SpinlockGuard();
+
+private:
+	Spinlock spinlock_;
 };
 }
