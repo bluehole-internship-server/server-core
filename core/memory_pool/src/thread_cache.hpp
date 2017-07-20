@@ -15,7 +15,7 @@ class ThreadCache {
 private:
     class free_list {
     public:
-        void init(std::size_t size)
+        void init(size_t size)
         {
             list_ = NULL;
             length_ = 0;
@@ -97,35 +97,44 @@ public:
     static ThreadCache* GetCache();
 
     void Init(pthread_t tid);
-    void* Allocate(std::size_t size, int c_idx);
+    void* Allocate(size_t size, int c_idx);
     void Deallocate(void* ptr, int c_idx);
 
     ThreadCache* next_;
     ThreadCache* prev_;
 
 private:
-    void* fetch_from_central_cache(int c_idx, int byte_size);
+    void* fetch_from_central_cache(int byte_size, int c_idx);
+
     static ThreadCache* create_cache();
+
+    static void init_module();
 
     static ThreadCache* thread_heaps_;
     static int thread_heap_count_;
+    static bool is_inited_;
 
     free_list list_[ClassSizesMax];
+    pthread_t tid_;
     
     static THREAD_LOCAL thread_local_data thread_local_data_;    
 };
 
-extern PageHeapAllocator<ThreadCache> threadcache_allocator;
+extern PageHeapAllocator<ThreadCache> thread_cache_allocator;
 
 inline FORCE_INLINE ThreadCache* ThreadCache::GetCache()
 {
+    if (!is_inited_) {
+        init_module();
+    }
     ThreadCache* cache = thread_local_data_.heap;
-    if (cache == nullptr) cache = create_cache();
+    if (cache == nullptr)
+        cache = thread_local_data_.heap = create_cache();
 
     return cache;
 }
 
-inline FORCE_INLINE void* ThreadCache::Allocate(std::size_t size, int c_idx)
+inline FORCE_INLINE void* ThreadCache::Allocate(size_t size, int c_idx)
 {
     assert(Static::size_map().ClassToSize(c_idx) == size);
 

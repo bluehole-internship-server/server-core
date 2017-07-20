@@ -9,11 +9,11 @@
 namespace core::memory {
 
 // we only use this function for small sizes ( <= MaxSize )
-static inline int FORCE_INLINE lg_floor(std::size_t n)
+static inline int FORCE_INLINE lg_floor(size_t n)
 {
     int log = 0;
     int shift = 32;
-    std::size_t x;
+    size_t x;
     while ((shift/=2) > 0) {
         x = (n >> shift);
         if (x != 0) {
@@ -24,7 +24,7 @@ static inline int FORCE_INLINE lg_floor(std::size_t n)
     return log;
 }
 
-int SizeMap::alignment_for_size(std::size_t size)
+int SizeMap::alignment_for_size(size_t size)
 {
     // alignment has to be multiple of Alignment
     int ret = Alignment;
@@ -44,13 +44,13 @@ void SizeMap::Init()
     int space = Alignment;
 
     // compute properties for each size class
-    for (std::size_t size = Alignment; size <= MaxSize; size += space) {
+    for (int size = Alignment; size <= MaxSize; size += space) {
         space = alignment_for_size(size);
 
         // why divided by four? 
         int blocks_to_move = num_move_objs(size) / 4;
-        std::size_t page_size = 0;
-        std::size_t num_pages = 0;
+        size_t page_size = 0;
+        size_t num_pages = 0;
 
         do {
             page_size += PageSize;
@@ -77,9 +77,9 @@ void SizeMap::Init()
 
     num_classes = c_idx;
 
-    std::size_t next_size = 0;
+    size_t next_size = 0;
     for (c_idx = 1; c_idx < num_classes; ++c_idx) {
-        for (std::size_t size = next_size; size <= class_to_size_[c_idx];
+        for (size_t size = next_size; size <= class_to_size_[c_idx];
             size += Alignment) {
             index_to_class_[size_to_index(size)] = c_idx;
         }

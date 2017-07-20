@@ -6,7 +6,9 @@
 
 #include "types.hpp"
 #include "size_map.hpp"
+#include "page_heap.hpp"
 #include "central_freelist.hpp"
+#include "page_heap_allocator.hpp"
 
 namespace core::memory {
 class Static {
@@ -15,26 +17,32 @@ public:
     {
         if (is_inited_ == false) {
             InitStaticVars();
-            is_inited_ = true;
         }
     }
 
     static void InitStaticVars();
 
-    static Lock& pageheap_lock() { return pageheap_lock_; }
+    static PageHeap& page_heap() { return page_heap_; }
+    static Lock& page_heap_lock() { return page_heap_lock_; }
     static SizeMap& size_map() { return size_map_; }
-    static CentralFreeList& central_freelist() { return central_freelist_; }
+    static CentralFreeList* central_cache() { return central_cache_; }
+    static PageHeapAllocator<Span>& span_allocator()
+    {
+        return span_allocator_;
+    }
 
     static bool IsInited() { return is_inited_; }
 
 private:
-    static Lock pageheap_lock_;
+    static PageHeapAllocator<Span> span_allocator_;
+    static PageHeap page_heap_;
+    static SpinLock page_heap_lock_;
     static SizeMap size_map_;
-    static CentralFreeList central_freelist_;
+    static CentralFreeList central_cache_[ClassSizesMax];
     static bool is_inited_;
 };
 
-
-
+int get_page_size();
+void* sys_alloc(size_t size, size_t* actual_size, size_t alignment);
 
 }

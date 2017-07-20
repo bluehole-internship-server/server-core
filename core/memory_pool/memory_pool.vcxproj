@@ -147,8 +147,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\central_freelist.cpp" />
     <ClCompile Include="src\malloc.cpp" />
+    <ClCompile Include="src\page_heap.cpp" />
     <ClCompile Include="src\size_map.cpp" />
+    <ClCompile Include="src\span.cpp" />
     <ClCompile Include="src\statics.cpp" />
     <ClCompile Include="src\test.cpp" />
     <ClCompile Include="src\thread_cache.cpp" />
@@ -156,8 +159,10 @@
   <ItemGroup>
     <ClInclude Include="src\central_freelist.hpp" />
     <ClInclude Include="src\malloc.hpp" />
+    <ClInclude Include="src\page_heap.hpp" />
     <ClInclude Include="src\page_heap_allocator.hpp" />
     <ClInclude Include="src\size_map.hpp" />
+    <ClInclude Include="src\span.hpp" />
     <ClInclude Include="src\statics.hpp" />
     <ClInclude Include="src\thread_cache.hpp" />
     <ClInclude Include="src\types.hpp" />

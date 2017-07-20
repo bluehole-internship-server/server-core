@@ -1,6 +1,8 @@
 //
 // types.hpp
 //
+// define types and configurations
+//
 
 #pragma once
 
@@ -13,15 +15,18 @@
 #define THREAD_LOCAL _declspec(thread)
 
 namespace core::memory {
-    static const std::size_t MaxSize = 256 * 1024;
-    static const std::size_t ClassSizesMax = 96; // because of cache line
-    static const std::size_t PageShift = 13;
-    static const std::size_t PageSize = 1 << PageShift;
-    static const std::size_t Alignment = 8;
-    static const std::size_t MaxPages = 1 << (20 - PageShift);
+    static const int MaxSize = 256 * 1024;
+    static const int ClassSizesMax = 96; // because of cache line
+    static const int PageShift = 13;
+    static const int PageSize = 1 << PageShift;
+    static const int Alignment = 8;
+    static const int MaxPages = 1 << (20 - PageShift);
+    static const int MinSystemAlloc = 128;
 
     typedef std::mutex Lock;
+    typedef std::mutex SpinLock;
     typedef DWORD pthread_t;
+    typedef unsigned long long page_id_t;
 
     static inline FORCE_INLINE void* & next_of(void* const ptr)
     {
