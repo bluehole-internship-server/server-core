@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.14
+VisualStudioVersion = 15.0.26430.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "memory_pool", "memory_pool\memory_pool.vcxproj", "{9E6CE369-E6DE-40FD-B858-5D6B32E54EDE}"
 EndProject
@@ -9,10 +9,9 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "thread_manager", "thread_ma
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lock", "lock\lock.vcxproj", "{699233AB-364D-49CB-B851-FC34DA5F24FD}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "server", "server\server.vcxproj", "{781EE712-ED9C-40BC-9481-60C7AC037DD0}"
+EndProject
 Global
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
@@ -44,8 +43,19 @@ Global
 		{699233AB-364D-49CB-B851-FC34DA5F24FD}.Release|x64.Build.0 = Release|x64
 		{699233AB-364D-49CB-B851-FC34DA5F24FD}.Release|x86.ActiveCfg = Release|Win32
 		{699233AB-364D-49CB-B851-FC34DA5F24FD}.Release|x86.Build.0 = Release|Win32
+		{781EE712-ED9C-40BC-9481-60C7AC037DD0}.Debug|x64.ActiveCfg = Debug|x64
+		{781EE712-ED9C-40BC-9481-60C7AC037DD0}.Debug|x64.Build.0 = Debug|x64
+		{781EE712-ED9C-40BC-9481-60C7AC037DD0}.Debug|x86.ActiveCfg = Debug|Win32
+		{781EE712-ED9C-40BC-9481-60C7AC037DD0}.Debug|x86.Build.0 = Debug|Win32
+		{781EE712-ED9C-40BC-9481-60C7AC037DD0}.Release|x64.ActiveCfg = Release|x64
+		{781EE712-ED9C-40BC-9481-60C7AC037DD0}.Release|x64.Build.0 = Release|x64
+		{781EE712-ED9C-40BC-9481-60C7AC037DD0}.Release|x86.ActiveCfg = Release|Win32
+		{781EE712-ED9C-40BC-9481-60C7AC037DD0}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal
