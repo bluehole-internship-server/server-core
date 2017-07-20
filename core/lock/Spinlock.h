@@ -23,10 +23,10 @@ private:
 class SpinlockGuard
 {
 public:
-	SpinlockGuard();
+	SpinlockGuard(Spinlock &spinlock);
 	~SpinlockGuard();
 
 private:
-	Spinlock spinlock_;
+	Spinlock &spinlock_;
 };
 }

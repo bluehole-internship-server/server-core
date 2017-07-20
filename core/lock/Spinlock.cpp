@@ -46,7 +46,7 @@ void Spinlock::ReadUnlock()
 	--reader_;
 }
 
-SpinlockGuard::SpinlockGuard()
+SpinlockGuard::SpinlockGuard(Spinlock &spinlock) : spinlock_(spinlock)
 {
 	spinlock_.Lock();
 }
