@@ -11,21 +11,16 @@ namespace core
 			{
 				for (;;) {
 					std::function<void()> task = nullptr;
-					spinlock_.Lock();
-					if (stop && tasks_.empty()) {
-						spinlock_.Unlock();
-						return;
-					}
-					else if (!tasks_.empty()) {
-						task = std::move(tasks_.front());
-						tasks_.pop();
-						spinlock_.Unlock();
-					}
-					else {
-						spinlock_.Unlock();
-					}
-	
-	
+					{
+						SpinlockGuard lockGuard(spinlock_);
+						if (stop && tasks_.empty()) {
+							return;
+						}
+						else if (!tasks_.empty()) {
+							task = std::move(tasks_.front());
+							tasks_.pop();
+						}
+					}	
 					if (task != nullptr)
 						task();
 				}
@@ -35,9 +30,10 @@ namespace core
 	}
 	ThreadPool::~ThreadPool()
 	{
-		spinlock_.Lock();
-		stop = true;
-		spinlock_.Unlock();
+		{
+			SpinlockGuard lockGuard(spinlock_);
+			stop = true;
+		}
 		for (auto &w : workers_)
 			w.join();
 	}

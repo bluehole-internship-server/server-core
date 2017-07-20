@@ -25,12 +25,11 @@ public:
 
 		std::future<return_type> res = task->get_future();
 		{
-			spinlock_.Lock();
+			SpinlockGuard lockGuard(spinlock_);
 			if (stop)
 				throw std::runtime_error("enqueue on stopped ThreadPool");
 
 			tasks_.emplace([task]() { (*task)(); });
-			spinlock_.Unlock();
 		}
 		return res;
 	}
