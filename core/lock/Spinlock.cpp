@@ -4,6 +4,7 @@ namespace core
 {
 Spinlock::Spinlock() : lock_(0), reader_(0)
 {
+	lock = Lock;
 }
 
 Spinlock::~Spinlock()

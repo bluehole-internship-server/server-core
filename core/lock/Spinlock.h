@@ -15,6 +15,9 @@ public:
 	void ReadLock();
 	void ReadUnlock();
 
+	void lock() { Lock(); }
+	void unlock() { Unlock(); }
+
 private:
 	std::atomic<long> lock_;
 	std::atomic<long> reader_;
