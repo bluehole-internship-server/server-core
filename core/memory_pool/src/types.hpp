@@ -11,6 +11,8 @@
 
 #include <Windows.h>
 
+#include "Spinlock.h"
+
 #define FORCE_INLINE __forceinline
 #define THREAD_LOCAL _declspec(thread)
 
@@ -23,8 +25,9 @@ namespace core::memory {
     static const int MaxPages = 1 << (20 - PageShift);
     static const int MinSystemAlloc = 128;
 
-    typedef std::mutex Lock;
-    typedef std::mutex SpinLock;
+    typedef core::Spinlock Lock;
+    typedef core::Spinlock SpinLock;
+
     typedef DWORD pthread_t;
     typedef unsigned long long page_id_t;
 

@@ -13,12 +13,12 @@ namespace core::memory {
 void* do_large_malloc(size_t size)
 {
     {
-        // Static::page_heap_lock().lock();
+        Static::page_heap_lock().lock();
         // HACK
         Span* span = Static::page_heap().New(((size + PageSize - 1) / PageSize));
         void* ret = reinterpret_cast<void*>(((span->start) << PageShift));
         return ret;
-        // Static::page_heap_lock().unlock();
+        Static::page_heap_lock().unlock();
     }
 }
 
