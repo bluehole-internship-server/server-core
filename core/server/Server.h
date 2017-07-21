@@ -10,6 +10,7 @@
 #include <ws2tcpip.h>
 #include <mswsock.h>
 #include <stdio.h>
+#include <functional>
 #include "ThreadPool.h"
 
 namespace core
@@ -21,6 +22,9 @@ public:
 	~Server();
 	VOID Init();
 	VOID SetListenPort(USHORT);
+	template <class F, class... Args>
+	auto AddWork(F&& f, Args&&... args)
+		-> std::future<typename std::result_of<F(Args...)>::type>;
 	VOID Run();
 
 	static LPFN_DISCONNECTEX DisconnectEx;
@@ -37,3 +41,5 @@ private:
 	void PrintError(wchar_t * target, DWORD error_code);
 };	
 }
+
+#include "Server.inl"
