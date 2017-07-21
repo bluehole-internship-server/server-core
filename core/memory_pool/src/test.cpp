@@ -10,7 +10,14 @@ using namespace core::memory;
 
 int main()
 {
-    std::cout << Malloc(1) << std::endl;
-    std::cout << Malloc(512 * 1024) << std::endl;
+    void* ptr_small = Malloc(1);
+    void* ptr_large = Malloc(512 << 10);
+
+    std::cout << ptr_small << std::endl;
+    std::cout << ptr_large << std::endl;
+
+    Free(ptr_small, 1);
+    Free(ptr_large, 512 << 10);
+
     return 0;
 }

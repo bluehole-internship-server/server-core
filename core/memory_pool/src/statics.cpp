@@ -5,7 +5,6 @@
 #pragma once
 
 #include <assert.h>
-#include <iostream>
 
 #include "statics.hpp"
 #include "malloc.hpp"
@@ -33,6 +32,8 @@ void Static::InitStaticVars() {
     }
 
     is_inited_ = true;
+
+    Free(Malloc(1), 1);
 }
 
 void* sys_alloc(size_t size, size_t* actual_size, size_t alignment)

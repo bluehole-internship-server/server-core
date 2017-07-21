@@ -148,6 +148,7 @@ inline FORCE_INLINE void* ThreadCache::Allocate(size_t size, int c_idx)
 
 inline FORCE_INLINE void ThreadCache::Deallocate(void* ptr, int c_idx)
 {
-
+    // some corner case?
+    list_[c_idx].push(ptr);
 }
 }

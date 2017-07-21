@@ -4,11 +4,9 @@
 
 #pragma once
 
-#include <iostream>
-
 #include <cstddef>
 
 namespace core::memory {
 void* Malloc(size_t size);
-void Free(void* ptr);
+void Free(void* ptr, size_t size);
 }

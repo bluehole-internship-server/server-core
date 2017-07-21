@@ -65,5 +65,6 @@ ThreadCache* ThreadCache::create_cache()
 void ThreadCache::init_module()
 {
     thread_cache_allocator.Init();
+    is_inited_ = true;
 }
 }

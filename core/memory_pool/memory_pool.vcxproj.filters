@@ -68,5 +68,8 @@
     <ClInclude Include="src\page_heap.hpp">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="src\page_map.hpp">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

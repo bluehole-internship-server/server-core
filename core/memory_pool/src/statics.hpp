@@ -6,9 +6,10 @@
 
 #include "types.hpp"
 #include "size_map.hpp"
-#include "page_heap.hpp"
 #include "central_freelist.hpp"
 #include "page_heap_allocator.hpp"
+#include "page_map.hpp"
+#include "page_heap.hpp"
 
 namespace core::memory {
 class Static {

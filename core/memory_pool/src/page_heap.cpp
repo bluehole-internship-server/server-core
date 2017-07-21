@@ -9,8 +9,12 @@
 #include "statics.hpp"
 
 namespace core::memory {
+PageHeapAllocator<PageMap::Node> PageMap::node_allocator_;
+
 void PageHeap::Init()
 {
+    page_map_.Init();
+
     large_.normal.next = &large_.normal;
     large_.normal.prev = &large_.normal;
 
@@ -34,6 +38,17 @@ Span* PageHeap::New(int n)
         result = search_free_and_large_lists(n);
     }
     return result;
+}
+
+void PageHeap::Delete(Span* span)
+{
+    // HACK
+    insert_to_free(span);
+}
+
+Span* PageHeap::GetDiscriptor(void* ptr)
+{
+    return reinterpret_cast<Span*>(page_map_.Get((uintptr_t)ptr));
 }
 
 void PageHeap::RegisterSizeClass(Span* span, int c_idx)
@@ -85,7 +100,6 @@ Span* PageHeap::carve(Span* span, int n)
     if (remain > 0) {
         Span* left = new_span(span->start + n, remain);
         left->location = old_location;
-        record_span(left);
         insert_to_free(left);
 
         span->length = n;
@@ -100,13 +114,14 @@ Span* PageHeap::new_span(page_id_t page_id, int len)
     memset(span, 0, sizeof(Span));
     span->start = page_id;
     span->length = len;
+    record_span(span);
 
     return span;
 }
 
 void PageHeap::record_span(Span* span)
 {
-
+    page_map_.Set((uintptr_t)(span->start << PageShift), span);
 }
 
 void PageHeap::insert_to_free(Span* span)

@@ -6,6 +6,7 @@
 
 #include "types.hpp"
 #include "span.hpp"
+#include "page_map.hpp"
 
 namespace core::memory {
 class PageHeap {
@@ -19,6 +20,10 @@ public:
     void Init();
 
     Span* New(int n);
+    void Delete(Span* span);
+
+    Span* GetDiscriptor(void* ptr);
+
     void RegisterSizeClass(Span* span, int c_idx);
     void SetCachedSizeClass(page_id_t page_id, int c_idx);
 
@@ -37,5 +42,7 @@ private:
     // free spans of length >= MaxPages
     SpanList large_;
     SpanList free_[MaxPages];
+
+    PageMap page_map_;
 };
 }

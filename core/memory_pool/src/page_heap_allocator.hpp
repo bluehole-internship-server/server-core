@@ -5,7 +5,6 @@
 #pragma once
 
 #include "types.hpp"
-#include "statics.hpp"
 
 namespace core::memory {
 
@@ -52,7 +51,7 @@ public:
     int in_use() { return in_use_; }
 
 private:
-    static const int alloc_increment = 128 << 10;
+    static const int alloc_increment = 512 << 10;
     static const int meta_data_alignment = 8;
 
     bool meta_data_alloc();
@@ -68,6 +67,7 @@ private:
 template<typename T>
 bool PageHeapAllocator<T>::meta_data_alloc()
 {
+    // TODO : remainders?
     free_avail_ = alloc_increment;
     free_area_ = reinterpret_cast<char*>(
         sys_alloc(alloc_increment, &free_avail_, meta_data_alignment));
