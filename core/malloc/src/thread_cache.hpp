@@ -10,6 +10,8 @@
 #include "statics.hpp"
 #include "page_heap_allocator.hpp"
 
+#include <iostream>
+
 namespace core::memory {
 class ThreadCache {
 private:
@@ -72,12 +74,13 @@ private:
         int lowwatermark() const { return lowater_; }
         void clear_lowwatermark() { lowater_ = length_; }
         int max_length() const { return max_length_; }
+        void set_max_length(int max_length) { max_length_ = max_length; }
         int length_overages() const { return length_overages_; }
         void set_length_overages(int new_count) {
             length_overages_ = new_count;
         }
         int object_size() const { return size_; }
-        bool empty() const { return list_ == nullptr; }
+        bool empty() const { return length_ == 0; }
 
     private:
         void* list_;

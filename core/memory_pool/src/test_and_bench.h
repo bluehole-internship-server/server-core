@@ -8,6 +8,8 @@
 #include <unordered_set>
 #include <chrono>
 
+#include "malloc.hpp"
+
 struct TestStruct {
 public:
     void TestObjectPool()
@@ -112,7 +114,7 @@ public:
 
         for (int i = 0; i < num_routine; i++) {
             // need to deallocate
-            free(ptr[i]);
+            core::memory::Free(ptr[i], size);
         }
         delete[] ptr;
 
@@ -131,7 +133,7 @@ public:
 
         for (int i = 0; i < num_thread_; i++) {
             for (int j = 0; j < num_routine; j++) {
-                free(ptr[i][j]);
+                core::memory::Free(ptr[i], size);
             }
             delete[] ptr[i];
         }
@@ -227,7 +229,10 @@ void BenchStruct::malloc_simple_allocate(int num_routine,
     std::size_t size, void** ptr)
 {
     for (int i = 0; i < num_routine; i++) {
-        ptr[i] = malloc(size);
+        ptr[i] = core::memory::Malloc(size);
+        if (ptr[i] == nullptr) {
+            std::cout << "something's wrong..\n";
+        }
     }
 }
 

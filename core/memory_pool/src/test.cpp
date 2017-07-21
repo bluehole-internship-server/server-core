@@ -13,6 +13,7 @@
 #include <Windows.h>
 
 #include "memory_pool.hpp"
+#include "malloc.hpp"
 
 #include "test_and_bench.h"
 
@@ -61,9 +62,11 @@ struct test_functor {
             double avg_pool = 0.0;
             double avg_malloc = 0.0;
 
+            /*
             avg_pool = get_avg(num_routine,
                 &BenchStruct::BenchSimpleAlloc,
                 &B, num_inner[st / threshold], sizes[st]);
+            */
             avg_malloc = get_avg(num_routine,
                 &BenchStruct::BenchMallocSimpleAlloc,
                 &B, num_inner[st / threshold], sizes[st]);
@@ -78,10 +81,11 @@ struct test_functor {
         if (st < ed) {
             double avg_pool = 0.0;
             double avg_malloc = 0.0;
-            
+            /*
             avg_pool = get_avg(num_routine,
                 &BenchStruct::BenchSimpleAllocMT<sizes[st]>,
                 &B, num_inner[st / threshold] / num_thread);
+                */
             avg_malloc = get_avg(num_routine,
                 &BenchStruct::BenchMallocSimpleAllocMT,
                 &B, num_inner[st / threshold] / num_thread,
@@ -97,12 +101,12 @@ struct test_functor {
         if (st < ed) {
             double avg_pool = 0.0;
             double avg_malloc = 0.0;
-
+            /*
             avg_pool = get_avg(num_routine,
                 &BenchStruct::BenchSimpleAllocDealloc,
                 &B, num_inner[st / threshold],
                 sizes[st]);
-            avg_malloc = get_avg(num_routine,
+            */avg_malloc = get_avg(num_routine,
                 &BenchStruct::BenchMallocSimpleAllocDealloc,
                 &B, num_inner[st / threshold],
                 sizes[st]);
@@ -117,11 +121,11 @@ struct test_functor {
         if (st < ed) {
             double avg_pool = 0.0;
             double avg_malloc = 0.0;
-
+            /*
             avg_pool = get_avg(num_routine,
                 &BenchStruct::BenchSimpleAllocDeallocMT<sizes[st]>,
                 &B, num_inner[st / threshold] / num_thread);
-            avg_malloc = get_avg(num_routine,
+            */avg_malloc = get_avg(num_routine,
                 &BenchStruct::BenchMallocSimpleAllocDeallocMT,
                 &B, num_inner[st / threshold] / num_thread,
                 sizes[st]);
@@ -154,16 +158,16 @@ int main()
     std::cout << "May be everything is fine.\n\n";
    
     std::cout << "test_alloc()\n\n";
-    test_functor<0, num_size>().test_alloc();
+    test_functor<13, num_size>().test_alloc();
 
     std::cout << "test_alloc_mt()\n\n";
-    test_functor<0, num_size>().test_alloc_mt();
+    //test_functor<0, num_size>().test_alloc_mt();
 
     std::cout << "test_alloc_dealloc()\n\n";
-    test_functor<0, num_size>().test_alloc_dealloc();
+    //test_functor<0, num_size>().test_alloc_dealloc();
 
     std::cout << "test_alloc_dealloc_mt()\n\n";
-    test_functor<0, num_size>().test_alloc_dealloc_mt();
+    //test_functor<0, num_size>().test_alloc_dealloc_mt();
 
     std::getchar();
 
