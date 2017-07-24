@@ -2,6 +2,7 @@
 
 IoContext::IoContext()
 {
+	client_ = new Client();
 	SecureZeroMemory(&overlapped_, sizeof(overlapped_));
 	SecureZeroMemory(&buffer_, sizeof(buffer_));
 	buffer_.len = 0;
