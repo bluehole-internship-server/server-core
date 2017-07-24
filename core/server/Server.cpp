@@ -18,9 +18,12 @@ Server::~Server()
 }
 VOID Server::Init()
 {
+	int result = 0;
+
 	// WinSock Init
 	WSADATA wsa_data;
-	_ASSERT(WSAStartup(MAKEWORD(2, 2), &wsa_data) == NO_ERROR);
+	result = WSAStartup(MAKEWORD(2, 2), &wsa_data);
+	_ASSERT( result == NO_ERROR);
 
 	// Listen
 	listen_socket_ = WSASocket(AF_INET, SOCK_STREAM, IPPROTO_TCP, NULL, 0, WSA_FLAG_OVERLAPPED);
@@ -34,26 +37,30 @@ VOID Server::Init()
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_port = htons(listen_port_);
 	server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-	_ASSERT(bind(listen_socket_, (SOCKADDR *)&server_addr, sizeof(server_addr)) != SOCKET_ERROR);
+	result = bind(listen_socket_, (SOCKADDR *)&server_addr, sizeof(server_addr));
+	_ASSERT( result != SOCKET_ERROR);
 
 	// Get Function Pointers
 	DWORD bytes = 0; 
 	GUID guidDisconnectEx = WSAID_DISCONNECTEX;
-	_ASSERT(WSAIoctl(listen_socket_, SIO_GET_EXTENSION_FUNCTION_POINTER,
-		&guidDisconnectEx, sizeof(GUID), &DisconnectEx, sizeof(LPFN_DISCONNECTEX), &bytes, NULL, NULL) != SOCKET_ERROR);
+	result = WSAIoctl(listen_socket_, SIO_GET_EXTENSION_FUNCTION_POINTER,
+		&guidDisconnectEx, sizeof(GUID), &DisconnectEx, sizeof(LPFN_DISCONNECTEX), &bytes, NULL, NULL);
+	_ASSERT( result != SOCKET_ERROR);
 
 	GUID guidAcceptEx = WSAID_ACCEPTEX;
-	_ASSERT(WSAIoctl(listen_socket_, SIO_GET_EXTENSION_FUNCTION_POINTER,
-		&guidAcceptEx, sizeof(GUID), &AcceptEx, sizeof(LPFN_ACCEPTEX), &bytes, NULL, NULL) != SOCKET_ERROR);
+	result = WSAIoctl(listen_socket_, SIO_GET_EXTENSION_FUNCTION_POINTER,
+		&guidAcceptEx, sizeof(GUID), &AcceptEx, sizeof(LPFN_ACCEPTEX), &bytes, NULL, NULL);
+	_ASSERT( result != SOCKET_ERROR);
 
 	GUID guidConnectEx = WSAID_CONNECTEX;
-	_ASSERT(WSAIoctl(listen_socket_, SIO_GET_EXTENSION_FUNCTION_POINTER,
-		&guidConnectEx, sizeof(GUID), &ConnectEx, sizeof(LPFN_CONNECTEX), &bytes, NULL, NULL) != SOCKET_ERROR);
+	result = WSAIoctl(listen_socket_, SIO_GET_EXTENSION_FUNCTION_POINTER,
+		&guidConnectEx, sizeof(GUID), &ConnectEx, sizeof(LPFN_CONNECTEX), &bytes, NULL, NULL);
+	_ASSERT( result != SOCKET_ERROR);
 
 	// Create and Associate IOCP
 	completion_port_ = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0);
 	_ASSERT(completion_port_ != NULL);
-	HANDLE associated_port = CreateIoCompletionPort((HANDLE)listen_socket_, completion_port_, 0, 0);
+	HANDLE associated_port = CreateIoCompletionPort((HANDLE)listen_socket_, completion_port_, (ULONG)listen_socket_, 0);
 	_ASSERT(completion_port_ == associated_port);
 	 
 	// Create New Thread Pool
@@ -66,11 +73,21 @@ VOID Server::SetListenPort(USHORT port)
 }
 VOID Server::Run()
 {
-	_ASSERT(listen(listen_socket_, SOMAXCONN) != SOCKET_ERROR);
+	int result = 0;
+	result = listen(listen_socket_, SOMAXCONN);
+	_ASSERT( result != SOCKET_ERROR);
 	SOCKET client_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	DWORD received_bytes;
 	OVERLAPPED overlapped;
 	SecureZeroMemory(&overlapped, sizeof(overlapped));
+
+	auto listener = [&]() {
+		DWORD received_bytes;
+		GetQueuedCompletionStatus(completion_port_, &received_bytes, &listen_socket_, (LPOVERLAPPED *)&overlapped, INFINITE);
+		puts("Listen!");
+	};
+	thread_pool_->Enqueue(listener);
+
 	while(TRUE)
 		AcceptEx(listen_socket_, client_socket, accept_buffer_, 0, sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, &received_bytes, &overlapped);
 }
