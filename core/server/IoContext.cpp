@@ -9,6 +9,11 @@ IoContext::IoContext()
 	buffer_.buf = nullptr;
 }
 
+IoContext::IoContext(Client * client, IoType io_type) : client_(client), io_type_(io_type)
+{
+	IoContext();
+}
+
 IoContext::~IoContext()
 {
 }

@@ -15,6 +15,7 @@ enum IoType
 struct IoContext
 {
 	IoContext();
+	IoContext(Client * client, IoType io_type);
 	~IoContext();
 
 	OVERLAPPED overlapped_;
