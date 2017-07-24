@@ -86,6 +86,10 @@ VOID Server::IocpWork(Server &server)
 		{
 			case IO_ACCEPT:
 				wprintf(L"Accepted.\n");
+				break;
+			default:
+				wprintf(L"What? %d\n", io_context->io_type);
+				break;
 		}
 	}
 }
@@ -100,8 +104,6 @@ VOID Server::Run()
 		DWORD received_bytes;
 		//OVERLAPPED overlapped;
 		IoContext * io_context = new IoContext();
-		io_context->buffer.len = 0;
-		io_context->buffer.buf = nullptr;
 		io_context->io_type = IO_ACCEPT;
 		AcceptEx(listen_socket_, client_socket, accept_buffer_, 0, sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, &received_bytes, (LPOVERLAPPED)io_context);
 		Sleep(100);
