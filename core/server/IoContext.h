@@ -1,6 +1,5 @@
 #pragma once
 #include <WinSock2.h>
-#include "Client.h"
 
 enum IoType
 {
@@ -12,6 +11,7 @@ enum IoType
 	IO_DISCONNECT
 };
 
+class Client;
 struct IoContext
 {
 	IoContext();
