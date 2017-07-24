@@ -230,9 +230,6 @@ void BenchStruct::malloc_simple_allocate(int num_routine,
 {
     for (int i = 0; i < num_routine; i++) {
         ptr[i] = core::memory::Malloc(size);
-        if (ptr[i] == nullptr) {
-            std::cout << "something's wrong..\n";
-        }
     }
 }
 

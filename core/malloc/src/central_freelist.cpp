@@ -41,7 +41,7 @@ int CentralFreeList::Remove(int n, void** start, void** end)
         int slot = --used_slots_;
         *start = tc_slots_[slot].head;
         *end = tc_slots_[slot].tail;
-        lock_.unlock();
+        //lock_.unlock();
         return n;
     }
 
@@ -131,7 +131,6 @@ void CentralFreeList::populate()
     // require lock_
     lock_.unlock();
     const int num_pages = Static::size_map().ClassToPages(size_class_);
-
     Span* span = nullptr;
     {
         Static::page_heap_lock().lock();

@@ -51,7 +51,7 @@ public:
     int in_use() { return in_use_; }
 
 private:
-    static const int alloc_increment = 512 << 10;
+    static const int alloc_increment = 1024 << 13;
     static const int meta_data_alignment = 8;
 
     bool meta_data_alloc();

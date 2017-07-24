@@ -9,7 +9,7 @@
 #include "statics.hpp"
 
 namespace core::memory {
-PageHeapAllocator<PageMap::Node> PageMap::node_allocator_;
+PageHeapAllocator<PageMap::Leaf> PageMap::leaf_allocator_;
 
 void PageHeap::Init()
 {
@@ -121,7 +121,7 @@ Span* PageHeap::new_span(page_id_t page_id, int len)
 
 void PageHeap::record_span(Span* span)
 {
-    page_map_.Set((uintptr_t)(span->start << PageShift), span);
+    page_map_.Set((uintptr_t)(span->start), span);
 }
 
 void PageHeap::insert_to_free(Span* span)

@@ -61,7 +61,6 @@ private:
 
     int alignment_for_size(size_t size);
 
-
     int class_to_size_[ClassSizesMax];
     int class_to_pages_[ClassSizesMax];
     int num_objects_to_move_[ClassSizesMax];

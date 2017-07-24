@@ -131,9 +131,9 @@ inline FORCE_INLINE ThreadCache* ThreadCache::GetCache()
         init_module();
     }
     ThreadCache* cache = thread_local_data_.heap;
-    if (cache == nullptr)
+    if (cache == nullptr) {
         cache = thread_local_data_.heap = create_cache();
-
+    }
     return cache;
 }
 

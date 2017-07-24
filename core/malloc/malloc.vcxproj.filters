@@ -36,9 +36,6 @@
     <ClCompile Include="src\statics.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="src\test.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="src\thread_cache.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
