@@ -2,9 +2,6 @@
 #include <WinSock2.h>
 #include "Client.h"
 
-#define SEND_BUFFER_SIZE 32
-#define RECV_BUFFER_SIZE 256
-
 enum IoType
 {
 	IO_NONE,
@@ -24,6 +21,4 @@ struct IoContext
 	Client client_;
 	WSABUF buffer_;
 	IoType io_type_;
-	char * send_buffer_;
-	char * recv_buffer_;
 };
