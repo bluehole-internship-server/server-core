@@ -13,6 +13,7 @@
 #include <functional>
 #include "ThreadPool.h"
 #include "IoContext.h"
+#include "Client.h"
 
 namespace core
 {

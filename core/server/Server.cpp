@@ -100,11 +100,15 @@ VOID Server::Run()
 	_ASSERT( result != SOCKET_ERROR);
 	
 	while (TRUE) {
-		SOCKET client_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 		DWORD received_bytes;
-		//OVERLAPPED overlapped;
+		Client * client = new Client(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP));
+		SOCKET client_socket = client->GetSocket();
 		IoContext * io_context = new IoContext();
 		io_context->io_type = IO_ACCEPT;
+		
+		auto result = CreateIoCompletionPort((HANDLE)client->GetSocket(), completion_port_, (ULONG_PTR)client_socket, 0);
+		_ASSERT(result == completion_port_);
+				
 		AcceptEx(listen_socket_, client_socket, accept_buffer_, 0, sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, &received_bytes, (LPOVERLAPPED)io_context);
 		Sleep(100);
 	}
