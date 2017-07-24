@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <functional>
 #include "ThreadPool.h"
+#include "IoContext.h"
 
 namespace core
 {
@@ -25,6 +26,7 @@ public:
 	template <class F, class... Args>
 	auto AddWork(F&& f, Args&&... args)
 		-> std::future<typename std::result_of<F(Args...)>::type>;
+	static VOID IocpWork(Server &server);
 	VOID Run();
 
 	static LPFN_DISCONNECTEX DisconnectEx;

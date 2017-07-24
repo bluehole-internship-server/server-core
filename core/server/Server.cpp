@@ -64,32 +64,48 @@ VOID Server::Init()
 	_ASSERT(completion_port_ == associated_port);
 	 
 	// Create New Thread Pool
-	if (thread_pool_ == nullptr)
+	if (thread_pool_ == nullptr) {
 		thread_pool_ = new ThreadPool(32);
+		for (int i = 0; i < 32; ++i)
+			thread_pool_->Enqueue(IocpWork, *this);
+	}
 }
 VOID Server::SetListenPort(USHORT port)
 {
 	listen_port_ = port;
+}
+VOID Server::IocpWork(Server &server)
+{
+	while (TRUE) {
+		DWORD received_bytes = 0;
+		IoContext * io_context = nullptr;
+		ULONG_PTR key = 0;
+		GetQueuedCompletionStatus(server.completion_port_, &received_bytes, (PULONG_PTR)&key, (LPOVERLAPPED *)&io_context, INFINITE);
+		
+		switch (io_context->io_type)
+		{
+			case IO_ACCEPT:
+				wprintf(L"Accepted.\n");
+		}
+	}
 }
 VOID Server::Run()
 {
 	int result = 0;
 	result = listen(listen_socket_, SOMAXCONN);
 	_ASSERT( result != SOCKET_ERROR);
-	SOCKET client_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	DWORD received_bytes;
-	OVERLAPPED overlapped;
-	SecureZeroMemory(&overlapped, sizeof(overlapped));
-
-	auto listener = [&]() {
+	
+	while (TRUE) {
+		SOCKET client_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 		DWORD received_bytes;
-		GetQueuedCompletionStatus(completion_port_, &received_bytes, &listen_socket_, (LPOVERLAPPED *)&overlapped, INFINITE);
-		puts("Listen!");
-	};
-	thread_pool_->Enqueue(listener);
-
-	while(TRUE)
-		AcceptEx(listen_socket_, client_socket, accept_buffer_, 0, sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, &received_bytes, &overlapped);
+		//OVERLAPPED overlapped;
+		IoContext * io_context = new IoContext();
+		io_context->buffer.len = 0;
+		io_context->buffer.buf = nullptr;
+		io_context->io_type = IO_ACCEPT;
+		AcceptEx(listen_socket_, client_socket, accept_buffer_, 0, sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, &received_bytes, (LPOVERLAPPED)io_context);
+		Sleep(100);
+	}
 }
 void Server::PrintError(wchar_t * target, DWORD error_code)
 {
