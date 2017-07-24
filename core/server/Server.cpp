@@ -11,8 +11,6 @@ namespace core
 Server::Server()
 {
 }
-
-
 Server::~Server()
 {
 }
@@ -65,8 +63,8 @@ VOID Server::Init()
 	 
 	// Create New Thread Pool
 	if (thread_pool_ == nullptr) {
-		thread_pool_ = new ThreadPool(32);
-		for (int i = 0; i < 32; ++i)
+		thread_pool_ = new ThreadPool(WORKER_AMOUNT);
+		for (int i = 0; i < WORKER_AMOUNT; ++i)
 			thread_pool_->Enqueue(IocpWork, *this);
 	}
 }
@@ -82,13 +80,63 @@ VOID Server::IocpWork(Server &server)
 		ULONG_PTR key = 0;
 		GetQueuedCompletionStatus(server.completion_port_, &received_bytes, (PULONG_PTR)&key, (LPOVERLAPPED *)&io_context, INFINITE);
 		
-		switch (io_context->io_type)
-		{
+		if (key == server.listen_socket_)
+			wprintf(L"Key is ListenSocket.\n");
+		else
+			wprintf(L"Key is %llu.\n", key);
+			
+		switch (io_context->io_type_) {
 			case IO_ACCEPT:
 				wprintf(L"Accepted.\n");
+				{
+					IoContext * recv_ready_context = new IoContext();
+					recv_ready_context->io_type_ = IO_RECV_READY;
+					recv_ready_context->client_.socket_ = io_context->client_.socket_;
+
+					DWORD recvbytes = 0;
+					DWORD flags = 0;
+
+					/// start async recv
+					wprintf(L"Accpted Socket is %llu.\n", io_context->client_.socket_);
+					WSARecv(io_context->client_.socket_, &recv_ready_context->buffer_, 1, &recvbytes, &flags, (LPWSAOVERLAPPED)recv_ready_context, NULL);
+				}
+				break;
+			case IO_RECV_READY:
+				wprintf(L"Receive is Prepared.\n");
+				{
+					IoContext * recv_context = new IoContext();
+					recv_context->io_type_ = IO_RECV;
+					recv_context->client_.socket_ = io_context->client_.socket_;
+					
+					DWORD recvbytes = 0;
+					DWORD flags = 0;
+					recv_context->buffer_.len = RECV_BUFFER_SIZE;
+					recv_context->buffer_.buf = recv_context->recv_buffer_;
+
+					wprintf(L"Receive Prepared Socket is %llu.\n", io_context->client_.socket_);
+					if(WSARecv(io_context->client_.socket_, &recv_context->buffer_, 1, &recvbytes, &flags, (LPWSAOVERLAPPED)recv_context, NULL) == SOCKET_ERROR)
+						wprintf(L"BYE\n");
+				}
+				break;
+			case IO_RECV:
+				wprintf(L"Received.\n");
+				{
+					io_context->buffer_.buf[received_bytes] = 0;
+					printf("Received Data : %s\n", io_context->buffer_.buf);
+					IoContext * recv_ready_context = new IoContext();
+					recv_ready_context->io_type_ = IO_RECV_READY;
+					recv_ready_context->client_.socket_ = io_context->client_.socket_;
+
+					DWORD recvbytes = 0;
+					DWORD flags = 0;
+
+					/// start async recv
+					wprintf(L"Received Socket is %llu.\n", io_context->client_.socket_);
+					WSARecv(io_context->client_.socket_, &recv_ready_context->buffer_, 1, &recvbytes, &flags, (LPWSAOVERLAPPED)recv_ready_context, NULL);
+				}
 				break;
 			default:
-				wprintf(L"What? %d\n", io_context->io_type);
+				wprintf(L"What? %d\n", io_context->io_type_);
 				break;
 		}
 	}
@@ -101,16 +149,17 @@ VOID Server::Run()
 	
 	while (TRUE) {
 		DWORD received_bytes;
-		Client * client = new Client(socket(AF_INET, SOCK_STREAM, IPPROTO_TCP));
-		SOCKET client_socket = client->GetSocket();
 		IoContext * io_context = new IoContext();
-		io_context->io_type = IO_ACCEPT;
+		io_context->io_type_ = IO_ACCEPT;
+		io_context->client_.socket_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+		SOCKET client_socket = io_context->client_.socket_;
 		
-		auto result = CreateIoCompletionPort((HANDLE)client->GetSocket(), completion_port_, (ULONG_PTR)client_socket, 0);
+		//wprintf(L"Socket is %llu.\n", client_socket);
+		auto result = CreateIoCompletionPort((HANDLE)client_socket, completion_port_, (ULONG_PTR)client_socket, 0);
 		_ASSERT(result == completion_port_);
 				
 		AcceptEx(listen_socket_, client_socket, accept_buffer_, 0, sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, &received_bytes, (LPOVERLAPPED)io_context);
-		Sleep(100);
+		Sleep(1000);
 	}
 }
 void Server::PrintError(wchar_t * target, DWORD error_code)

@@ -13,7 +13,8 @@
 #include <functional>
 #include "ThreadPool.h"
 #include "IoContext.h"
-#include "Client.h"
+
+#define WORKER_AMOUNT 16
 
 namespace core
 {
