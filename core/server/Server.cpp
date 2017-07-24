@@ -84,28 +84,15 @@ VOID Server::IocpWork(Server &server)
 
 		switch (io_context->io_type_) {
 			case IO_ACCEPT:
-				// client.PrepareRecieve()
-				wprintf(L"Accepted.\n");
-				{
-					IoContext * recv_ready_context = new IoContext();
-					recv_ready_context->io_type_ = IO_RECV_READY;
-					recv_ready_context->client_->socket_ = io_context->client_->socket_;
-
-					DWORD recvbytes = 0;
-					DWORD flags = 0;
-
-					/// start async recv
-					wprintf(L"Accpted Socket is %llu.\n", io_context->client_->socket_);
-					WSARecv(io_context->client_->socket_, &recv_ready_context->buffer_, 1, &recvbytes, &flags, (LPWSAOVERLAPPED)recv_ready_context, NULL);
-				}
+				client->PrepareReiceve();
 				break;
 			case IO_RECV_READY:
 				wprintf(L"Receive is Prepared.\n");
 				{
-					IoContext * recv_context = new IoContext();
-					recv_context->io_type_ = IO_RECV;
+					IoContext * recv_context = new IoContext(io_context->client_, IO_RECV);
+					/*recv_context->io_type_ = IO_RECV;
 					recv_context->client_->socket_ = io_context->client_->socket_;
-					
+					*/
 					DWORD recvbytes = 0;
 					DWORD flags = 0;
 					recv_context->buffer_.len = RECV_BUFFER_SIZE;
@@ -121,9 +108,9 @@ VOID Server::IocpWork(Server &server)
 				{
 					io_context->buffer_.buf[received_bytes] = 0;
 					printf("Received Data : %s\n", io_context->buffer_.buf);
-					IoContext * recv_ready_context = new IoContext();
-					recv_ready_context->io_type_ = IO_RECV_READY;
-					recv_ready_context->client_->socket_ = io_context->client_->socket_;
+					IoContext * recv_ready_context = new IoContext(io_context->client_, IO_RECV_READY);
+					/*recv_ready_context->io_type_ = IO_RECV_READY;
+					recv_ready_context->client_->socket_ = io_context->client_->socket_;*/
 
 					DWORD recvbytes = 0;
 					DWORD flags = 0;
@@ -147,9 +134,11 @@ VOID Server::Run()
 	
 	while (TRUE) {
 		DWORD received_bytes;
-		IoContext * io_context = new IoContext();
-		io_context->io_type_ = IO_ACCEPT;
-		io_context->client_->socket_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+		Client * new_client = new Client();
+		new_client->socket_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+		IoContext * io_context = new IoContext(new_client, IO_ACCEPT);
+		//io_context->io_type_ = IO_ACCEPT;
+		//io_context->client_->socket_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 		SOCKET client_socket = io_context->client_->socket_;
 		
 		//wprintf(L"Socket is %llu.\n", client_socket);
