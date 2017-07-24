@@ -108,6 +108,8 @@ public:
 
 private:
     void* fetch_from_central_cache(int byte_size, int c_idx);
+    void release_to_central_cache(int num_to_move, int c_idx);
+    void list_too_long(int c_idx);
 
     static ThreadCache* create_cache();
 
@@ -152,6 +154,10 @@ inline FORCE_INLINE void* ThreadCache::Allocate(size_t size, int c_idx)
 inline FORCE_INLINE void ThreadCache::Deallocate(void* ptr, int c_idx)
 {
     // some corner case?
-    list_[c_idx].push(ptr);
+    static int test_count = 0;
+    int length = list_[c_idx].push(ptr);
+    if (length > list_[c_idx].max_length()) {
+        list_too_long(c_idx);
+    }
 }
 }

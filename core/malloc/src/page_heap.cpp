@@ -43,6 +43,7 @@ Span* PageHeap::New(int n)
 void PageHeap::Delete(Span* span)
 {
     // HACK
+    span->location = Span::ON_NORMAL_FREELIST;
     insert_to_free(span);
 }
 
@@ -112,8 +113,13 @@ Span* PageHeap::new_span(page_id_t page_id, int len)
 {
     Span* span = Static::span_allocator().New();
     memset(span, 0, sizeof(Span));
+    
     span->start = page_id;
     span->length = len;
+    
+    // initialize to in_use
+    span->location = Span::IN_USE;
+
     record_span(span);
 
     return span;
@@ -126,6 +132,10 @@ void PageHeap::record_span(Span* span)
 
 void PageHeap::insert_to_free(Span* span)
 {
+    if (span->location == Span::ON_NORMAL_FREELIST) {
+        // need to decommit
+    }
+
     SpanList* list = (span->length < MaxPages) ?
         &free_[span->length] : &large_;
 

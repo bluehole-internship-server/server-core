@@ -33,15 +33,14 @@ void CentralFreeList::Init(int c_idx)
 
 int CentralFreeList::Remove(int n, void** start, void** end)
 {
-    // let's assume n is NumObjectsToMove
     if (n <= 0) return 0; // invalid case
 
     lock_.lock();
-    if (used_slots_ > 0) {
+    if (used_slots_ > 0 && false /* TODO */) {
         int slot = --used_slots_;
         *start = tc_slots_[slot].head;
         *end = tc_slots_[slot].tail;
-        //lock_.unlock();
+        lock_.unlock();
         return n;
     }
 
@@ -70,7 +69,13 @@ int CentralFreeList::Remove(int n, void** start, void** end)
 void CentralFreeList::Insert(int n, void* start, void* end)
 {
     lock_.lock();
-    // TODO
+    if (n == Static::size_map().NumObjectsToMove(size_class_) && 
+        used_slots_ < max_num_tc_entries /* TODO */) {
+        TCEntry *entry = &tc_slots_[used_slots_++];
+        entry->head = start;
+        entry->tail = end;
+    }
+    release_to_spans(start);
     lock_.unlock();
 }
 
@@ -126,11 +131,38 @@ int CentralFreeList::fetch_from_one_spans_safe(int n, void** start, void** end)
     return ret;
 }
 
+void CentralFreeList::release_lists_to_spans(void* start)
+{
+    while (start) {
+        release_to_spans(start);
+        start = next_of(start);
+    }
+}
+
+void CentralFreeList::release_to_spans(void* start)
+{
+    Span* span = nullptr; /* TODO : MapObjectToSpan */
+    
+    span->ref_count--;
+
+    if (span->ref_count == 0) {
+        span->next->prev = span->prev;
+        span->prev->next = span->next;
+
+        lock_.unlock();
+        Static::page_heap_lock().lock();
+        Static::page_heap().Delete(span);
+        Static::page_heap_lock().unlock();
+        lock_.lock();
+    }
+}
+
 void CentralFreeList::populate()
 {
     // require lock_
     lock_.unlock();
     const int num_pages = Static::size_map().ClassToPages(size_class_);
+
     Span* span = nullptr;
     {
         Static::page_heap_lock().lock();

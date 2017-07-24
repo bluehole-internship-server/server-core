@@ -24,6 +24,7 @@ namespace core::memory {
     static const int Alignment = 8;
     static const int MaxPages = 1 << (20 - PageShift);
     static const int MinSystemAlloc = 128;
+    static const int MaxListLength = 8192;
 
     typedef core::Spinlock Lock;
     typedef core::Spinlock SpinLock;

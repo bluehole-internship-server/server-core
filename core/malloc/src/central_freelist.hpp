@@ -23,9 +23,12 @@ public:
 private:
     int fetch_from_one_spans(int n, void** start, void** end);
     int fetch_from_one_spans_safe(int n, void** start, void** end);
+
+    void release_lists_to_spans(void* start);
+    void release_to_spans(void* start);
+
     void populate();
-
-
+  
     static const int max_num_tc_entries = 64;
 
     Lock lock_;

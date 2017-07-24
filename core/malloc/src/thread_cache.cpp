@@ -31,20 +31,44 @@ void* ThreadCache::fetch_from_central_cache(int byte_size, int c_idx)
     free_list& list = list_[c_idx];
     const int batch_size = Static::size_map().NumObjectsToMove(c_idx);
    
-    //const int num_to_move = (std::min)(list.max_length(), batch_size);
-    const int num_to_move = batch_size;
+    const int num_to_move = (std::min)(list.max_length(), batch_size);
 
     void* start = nullptr;
     void* end;
 
     int count =
         Static::central_cache()[c_idx].Remove(num_to_move, &start, &end);
+
     if (count > 0) {
         count--; // return start immediately
         list.push_range(count, next_of(start), end);
     }
 
+    if (list.max_length() < batch_size) {
+        list.set_max_length(list.max_length() + 1);
+    } else {
+        int new_length = (std::min)(list.max_length() + batch_size,
+            MaxListLength);
+        new_length -= new_length % batch_size;
+        list.set_max_length(new_length);
+    }
     return start;
+}
+
+void ThreadCache::release_to_central_cache(int num_to_move, int c_idx)
+{
+    free_list& list = list_[c_idx];
+    const int batch_size = Static::size_map().NumObjectsToMove(c_idx);
+    void *tail, *head;
+    list.pop_range(num_to_move, &tail, &head);
+    Static::central_cache()[c_idx].Insert(num_to_move, tail, head);
+}
+
+void ThreadCache::list_too_long(int c_idx)
+{
+    const int batch_size = Static::size_map().NumObjectsToMove(c_idx);
+    release_to_central_cache((std::min)(batch_size, list_[c_idx].length()),
+        c_idx);
 }
 
 ThreadCache* ThreadCache::create_cache()
