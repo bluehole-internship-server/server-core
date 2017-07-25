@@ -14,7 +14,15 @@ template<typename T,
 class ObjectPool : public Pool {
 public:
     explicit ObjectPool() : Pool(RequestedSize) { }
-    ~ObjectPool() { }
+    ~ObjectPool()
+    {
+        if (object_pool_ == nullptr) return;
+
+        ref_count_--;
+        if (ref_count_ == 0) {
+            _aligned_free(object_pool_);
+        }
+    }
 
     inline virtual void* Malloc() override
     {
@@ -26,16 +34,16 @@ public:
         return object_pool()->free(chunk);
     }
 
-    T* Construct(T&& t)
+    inline T* Construct(T&& t)
     {
         T* ret =
-            static_cast<T*>(reinterpret_cast<Pool*>(object_pool())->Malloc());
+            static_cast<T*>(object_pool()->Malloc());
 
         try {
             new (ret) T(std::move(t));
         }
         catch (...) {
-            Pool::Free(ret);
+            object_pool()->Free(ret);
             ret = nullptr;
         }
 
@@ -44,7 +52,8 @@ public:
 
     inline void Destroy(T* const chunk)
     {
-        destroy(chunk);
+        chunk->~T();
+        object_pool()->Free(chunk);
     }
 
     inline bool PurgeMemory()
@@ -56,6 +65,7 @@ private:
     inline ObjectPool<T, RequestedSize>* object_pool()
     {
         if (object_pool_ == nullptr) {
+            ref_count_++;
             object_pool_ = reinterpret_cast<ObjectPool<T, RequestedSize>*>
                 (_aligned_malloc(sizeof(ObjectPool<T, RequestedSize>), 64));
             new (object_pool_)ObjectPool<T, RequestedSize>();
@@ -65,7 +75,10 @@ private:
     }
 
     static __declspec(thread) __declspec(align(64))
-         ObjectPool<T, RequestedSize>* object_pool_;
+        ObjectPool<T, RequestedSize>* object_pool_;
+
+    static __declspec(thread) __declspec(align(64))
+        int ref_count_;
 
     inline void* malloc()
     {
@@ -77,12 +90,6 @@ private:
         Pool::Free(chunk);
     }
 
-    void destroy(T* const chunk)
-    {
-        chunk->~T();
-        Pool::Free(chunk);
-    }
-
     inline bool purge_memory()
     {
         return Pool::PurgeMemory();
@@ -91,5 +98,9 @@ private:
 
 template<typename T, unsigned RequestedSize>
 typename ObjectPool<T, RequestedSize>*
-        ObjectPool<T, RequestedSize>::object_pool_;
+ObjectPool<T, RequestedSize>::object_pool_ = nullptr;;
+
+template<typename T, unsigned RequestedSize>
+typename int ObjectPool<T, RequestedSize>::ref_count_ = 0;
+
 }

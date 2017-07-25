@@ -148,13 +148,13 @@ struct test_functor<ed, ed> {
 
 int main()
 {
-    //T.TestObjectPool();
+    T.TestObjectPool();
     //T.TestFastAllocator();
 
     std::cout << "May be everything is fine.\n\n";
    
     std::cout << "test_alloc()\n\n";
-    //test_functor<0, num_size>().test_alloc();
+    test_functor<0, num_size>().test_alloc();
 
     std::cout << "test_alloc_mt()\n\n";
     test_functor<0, num_size>().test_alloc_mt();
