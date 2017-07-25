@@ -12,6 +12,7 @@ public:
 	Client();
 	~Client();
 	BOOL PrepareReiceve();
+	BOOL Recieve(DWORD);
 
 	SOCKET socket_;
 	char * nickname_;
