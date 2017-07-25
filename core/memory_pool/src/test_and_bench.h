@@ -13,6 +13,7 @@ public:
     void TestObjectPool()
     {
         object_pool_.PurgeMemory();
+        assert(object_pool_.Preallocate(50));
         ptr_set_.clear();
 
         const int num_routine = 1000;

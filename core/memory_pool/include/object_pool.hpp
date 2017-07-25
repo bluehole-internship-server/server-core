@@ -24,6 +24,19 @@ public:
         }
     }
 
+    bool Preallocate(int n)
+    {
+        bool ret = true;
+        void** arr = reinterpret_cast<void**>(::malloc(sizeof(void*) * n));
+        for (int i = 0; i < n; i++) arr[i] = object_pool()->malloc();
+        for (int i = 0; i < n; i++) {
+            ret = ret & (arr[i] != nullptr);
+            if (arr[i] != nullptr) object_pool()->free(arr[i]);
+        }
+
+        return ret;
+    }
+
     inline virtual void* Malloc() override
     {
         return object_pool()->malloc();
