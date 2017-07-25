@@ -1,6 +1,8 @@
 #pragma once
 #include <WinSock2.h>
 
+namespace core
+{
 enum IoType
 {
 	IO_NONE,
@@ -24,3 +26,4 @@ struct IoContext
 	IoType io_type_;
 	DWORD received_;
 };
+}

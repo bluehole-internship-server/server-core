@@ -4,6 +4,8 @@
 #include "Client.h"
 #include "memory_pool.hpp"
 
+namespace core
+{
 class ClientManager
 {
 public:
@@ -18,4 +20,5 @@ private:
 	std::vector<Client *>clients_;
 	core::ObjectPool<Client> client_pool_;
 };
+}
 

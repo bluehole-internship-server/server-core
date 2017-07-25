@@ -5,7 +5,8 @@
 
 #define SEND_BUFFER_SIZE 32
 #define RECV_BUFFER_SIZE 2560
-
+namespace core
+{
 class Client
 {
 public:
@@ -22,4 +23,4 @@ public:
 	char send_buffer_[SEND_BUFFER_SIZE];
 	char recv_buffer_[RECV_BUFFER_SIZE];
 };
-
+}
