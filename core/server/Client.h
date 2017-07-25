@@ -14,6 +14,7 @@ public:
 	BOOL PrepareReceive();
 	BOOL Receive();
 	BOOL PostReceive(DWORD);
+	BOOL Disconnect();
 
 	SOCKET socket_;
 	char * nickname_;

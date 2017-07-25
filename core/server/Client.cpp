@@ -1,4 +1,5 @@
 #include "Client.h"
+#include "Server.h"
 
 Client::Client()
 {
@@ -6,6 +7,7 @@ Client::Client()
 
 Client::~Client()
 {
+	puts("Good Bye.");
 }
 
 BOOL Client::PrepareReceive()
@@ -29,7 +31,7 @@ BOOL Client::Receive()
 	recv_context->buffer_.buf = recv_buffer_;
 
 	if (WSARecv(socket_, &recv_context->buffer_, 1, &recieved_bytes, &flags, (LPWSAOVERLAPPED)recv_context, NULL) == SOCKET_ERROR)
-		wprintf(L"BYE\n");
+		return FALSE;
 
 	return TRUE;
 }
@@ -41,4 +43,11 @@ BOOL Client::PostReceive(DWORD received_bytes)
 	recv_buffer_[received_bytes] = 0;
 	printf("Received Data : %s\n", recv_buffer_);
 	return TRUE;
+}
+
+BOOL Client::Disconnect()
+{
+	IoContext * disconnect_context = new IoContext(this, IO_DISCONNECT);
+	core::Server::DisconnectEx(socket_, (LPWSAOVERLAPPED)disconnect_context, 0, 0);
+	return 0;
 }

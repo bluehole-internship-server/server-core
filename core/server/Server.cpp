@@ -10,6 +10,7 @@ namespace core
 {
 Server::Server()
 {
+	client_manager_ = new ClientManager();
 }
 Server::~Server()
 {
@@ -78,23 +79,35 @@ VOID Server::IocpWork(Server &server)
 		DWORD received_bytes = 0;
 		IoContext * io_context = nullptr;
 		ULONG_PTR key = 0;
+		BOOL io_result = false;
+
 		GetQueuedCompletionStatus(server.completion_port_, &received_bytes, (PULONG_PTR)&key, (LPOVERLAPPED *)&io_context, INFINITE);
 		auto client = io_context->client_;
 
 		switch (io_context->io_type_) {
 			case IO_ACCEPT:
-				client->PrepareReceive();
+				server.client_manager_->AddClient(client);
+				io_result = client->PrepareReceive();
 				break;
 			case IO_RECV_READY:
-				client->Receive();
+				io_result = client->Receive();
 				break;
 			case IO_RECV:
 				client->PostReceive(received_bytes);
-				client->PrepareReceive();
+				io_result = client->PrepareReceive();
+				break;
+			case IO_DISCONNECT:
+				server.client_manager_->DeleteClient(client);
+				io_result = true;
 				break;
 			default:
 				wprintf(L"What? %d\n", io_context->io_type_);
 				break;
+		}
+
+		if (io_result == FALSE)
+		{
+			client->Disconnect();
 		}
 	}
 }

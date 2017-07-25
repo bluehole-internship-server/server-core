@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <functional>
 #include "ThreadPool.h"
+#include "ClientManager.h"
 #include "Client.h"
 
 #define WORKER_AMOUNT 16
@@ -38,6 +39,7 @@ public:
 
 private:
 	static ThreadPool *thread_pool_;
+	ClientManager * client_manager_;
 	HANDLE completion_port_;
 	SOCKET listen_socket_;
 	USHORT listen_port_;
