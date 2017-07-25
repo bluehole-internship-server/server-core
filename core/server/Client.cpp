@@ -45,6 +45,17 @@ BOOL Client::PostReceive(DWORD received_bytes)
 	return TRUE;
 }
 
+BOOL Client::Send(char * data, DWORD size)
+{
+	IoContext * send_context = new IoContext(this, IO_SEND);
+	memmove(send_buffer_, data, size);
+	send_context->buffer_.buf = send_buffer_;
+	send_context->buffer_.len = size;
+	DWORD sent, flags;
+	WSASend(socket_, &(send_context->buffer_), 1, &sent, 0, (LPWSAOVERLAPPED)send_context, nullptr);
+	return 0;
+}
+
 BOOL Client::Disconnect()
 {
 	IoContext * disconnect_context = new IoContext(this, IO_DISCONNECT);

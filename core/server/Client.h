@@ -4,7 +4,7 @@
 #include "IoContext.h"
 
 #define SEND_BUFFER_SIZE 32
-#define RECV_BUFFER_SIZE 256
+#define RECV_BUFFER_SIZE 2560
 
 class Client
 {
@@ -14,6 +14,7 @@ public:
 	BOOL PrepareReceive();
 	BOOL Receive();
 	BOOL PostReceive(DWORD);
+	BOOL Send(char *, DWORD);
 	BOOL Disconnect();
 
 	SOCKET socket_;
