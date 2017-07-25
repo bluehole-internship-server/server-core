@@ -18,19 +18,16 @@ class SingletonPool {
 public:
     static void* Malloc()
     {
-        std::lock_guard<Mutex> g(mutex_);
         return pool_.Malloc();
     }
 
     static void Free(void* const chunk)
     {
-        std::lock_guard<Mutex> g(mutex_);
         pool_.Free(chunk);
     }
 
     static bool PurgeMemory()
     {
-        std::lock_guard<Mutex> g(mutex_);
         return pool_.PurgeMemory();
     }
 
@@ -45,7 +42,7 @@ private:
         return pool_;
     }
 
-    static pool pool_;
+    static __declspec(thread) __declspec(align(64)) pool pool_;
     static Mutex mutex_;
 
     SingletonPool() {}

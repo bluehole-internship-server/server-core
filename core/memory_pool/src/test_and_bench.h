@@ -81,7 +81,7 @@ public:
     template<unsigned RequestedSize>
     double BenchSimpleAllocMT(int num_routine)
     {
-        core::ObjectPool<Dummy, RequestedSize, std::mutex> pool;
+        core::ObjectPool<Dummy, RequestedSize> pool;
         return check_time(std::bind(&BenchStruct::simple_allocate_mt,
             this, num_routine, std::ref(pool)));
     }
@@ -97,7 +97,7 @@ public:
     template<unsigned RequestedSize>
     double BenchSimpleAllocDeallocMT(int num_routine)
     {
-        core::ObjectPool<Dummy, RequestedSize, std::mutex> pool;
+        core::ObjectPool<Dummy, RequestedSize> pool;
         return check_time(std::bind(
             &BenchStruct::simple_allocate_deallocate_mt,
             this, num_routine, std::ref(pool)));

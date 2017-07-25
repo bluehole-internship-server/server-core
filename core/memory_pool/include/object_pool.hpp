@@ -10,63 +10,86 @@
 namespace core {
 
 template<typename T,
-    unsigned RequestedSize = sizeof(T),
-    typename Mutex = null_mutex>
+    unsigned RequestedSize = sizeof(T)>
 class ObjectPool : public Pool {
 public:
-    explicit ObjectPool() : Pool(RequestedSize) { spin_ = FALSE; }
-    ~ObjectPool() {}
-    
-    virtual void* Malloc() override
+    explicit ObjectPool() : Pool(RequestedSize) { }
+    ~ObjectPool() { }
+
+    inline virtual void* Malloc() override
     {
-        std::lock_guard<Mutex> g(mutex_);
-        void* ret = Pool::Malloc();
-        return ret;
+        return object_pool()->malloc();
     }
 
-    virtual void Free(void* const chunk) override
+    inline virtual void Free(void* const chunk) override
     {
-        std::lock_guard<Mutex> g(mutex_);
-        Pool::Free(chunk);
+        return object_pool()->free(chunk);
     }
 
-    
     T* Construct(T&& t)
-    {   // T needs to have constructor with r value ref
-        // how about using template function?
-        std::lock_guard<Mutex> g(mutex_);
-        T* ret = static_cast<T*>(Pool::Malloc());
-        
+    {
+        T* ret =
+            static_cast<T*>(reinterpret_cast<Pool*>(object_pool())->Malloc());
+
         try {
             new (ret) T(std::move(t));
-        } catch (...) {
+        }
+        catch (...) {
             Pool::Free(ret);
             ret = nullptr;
         }
+
         return ret;
     }
 
-    void Destroy(T* const chunk)
+    inline void Destroy(T* const chunk)
+    {
+        destroy(chunk);
+    }
+
+    inline bool PurgeMemory()
+    {
+        return object_pool()->purge_memory();
+    }
+
+private:
+    inline ObjectPool<T, RequestedSize>* object_pool()
+    {
+        if (object_pool_ == nullptr) {
+            object_pool_ = reinterpret_cast<ObjectPool<T, RequestedSize>*>
+                (_aligned_malloc(sizeof(ObjectPool<T, RequestedSize>), 64));
+            new (object_pool_)ObjectPool<T, RequestedSize>();
+        }
+
+        return object_pool_;
+    }
+
+    static __declspec(thread) __declspec(align(64))
+         ObjectPool<T, RequestedSize>* object_pool_;
+
+    inline void* malloc()
+    {
+        return Pool::Malloc();
+    }
+
+    inline void free(void* const chunk)
+    {
+        Pool::Free(chunk);
+    }
+
+    void destroy(T* const chunk)
     {
         chunk->~T();
         Pool::Free(chunk);
     }
 
-    bool PurgeMemory()
+    inline bool purge_memory()
     {
-        std::lock_guard<Mutex> g(mutex_);
         return Pool::PurgeMemory();
     }
-
-private:
-    /* deprecated
-    Pool& pool()
-    {
-        return *this;
-    }
-    */
-
-    short spin_;
-    Mutex mutex_;
 };
+
+template<typename T, unsigned RequestedSize>
+typename ObjectPool<T, RequestedSize>*
+        ObjectPool<T, RequestedSize>::object_pool_;
 }
