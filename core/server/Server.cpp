@@ -84,25 +84,14 @@ VOID Server::IocpWork(Server &server)
 
 		switch (io_context->io_type_) {
 			case IO_ACCEPT:
-				client->PrepareReiceve();
+				client->PrepareReceive();
 				break;
 			case IO_RECV_READY:
-				wprintf(L"Receive is Prepared.\n");
-				{
-					IoContext * recv_context = new IoContext(io_context->client_, IO_RECV);
-					DWORD recvbytes = 0;
-					DWORD flags = 0;
-					recv_context->buffer_.len = RECV_BUFFER_SIZE;
-					recv_context->buffer_.buf = recv_context->client_->recv_buffer_;
-
-					wprintf(L"Receive Prepared Socket is %llu.\n", io_context->client_->socket_);
-					if(WSARecv(io_context->client_->socket_, &recv_context->buffer_, 1, &recvbytes, &flags, (LPWSAOVERLAPPED)recv_context, NULL) == SOCKET_ERROR)
-						wprintf(L"BYE\n");
-				}
+				client->Receive();
 				break;
 			case IO_RECV:
-				client->Recieve(received_bytes);
-				client->PrepareReiceve();
+				client->PostReceive(received_bytes);
+				client->PrepareReceive();
 				break;
 			default:
 				wprintf(L"What? %d\n", io_context->io_type_);

@@ -11,8 +11,9 @@ class Client
 public:
 	Client();
 	~Client();
-	BOOL PrepareReiceve();
-	BOOL Recieve(DWORD);
+	BOOL PrepareReceive();
+	BOOL Receive();
+	BOOL PostReceive(DWORD);
 
 	SOCKET socket_;
 	char * nickname_;
