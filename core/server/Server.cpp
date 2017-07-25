@@ -18,6 +18,10 @@ Server::~Server()
 VOID Server::Init()
 {
 	int result = 0;
+	accept_handler_ = nullptr;
+	receive_handler_ = nullptr;
+	send_handler_ = nullptr;
+	disconnect_handler_ = nullptr;
 
 	// WinSock Init
 	WSADATA wsa_data;
@@ -80,25 +84,32 @@ VOID Server::IocpWork(Server &server)
 		IoContext * io_context = nullptr;
 		ULONG_PTR key = 0;
 		BOOL io_result = false;
-
 		GetQueuedCompletionStatus(server.completion_port_, &received_bytes, (PULONG_PTR)&key, (LPOVERLAPPED *)&io_context, INFINITE);
+		io_context->received_ = received_bytes;
 		auto client = io_context->client_;
-
 		switch (io_context->io_type_) {
 			case IO_ACCEPT:
 				server.client_manager_->AddClient(client);
 				io_result = client->PrepareReceive();
+				server.AcceptHandler(io_context);
 				break;
 			case IO_RECV_READY:
 				io_result = client->Receive();
 				break;
 			case IO_RECV:
 				client->PostReceive(received_bytes);
+				//client->Send(client->recv_buffer_, received_bytes);
 				io_result = client->PrepareReceive();
+				server.ReceiveHandler(io_context);
+				break;
+			case IO_SEND:
+				io_result = true;
+				server.SendHandler(io_context);
 				break;
 			case IO_DISCONNECT:
 				server.client_manager_->RemoveClient(client);
 				io_result = true;
+				server.DisconnectHandler(io_context);
 				break;
 			default:
 				wprintf(L"What? %d\n", io_context->io_type_);
@@ -132,6 +143,42 @@ VOID Server::Run()
 		AcceptEx(listen_socket_, client_socket, accept_buffer_, 0, sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, &received_bytes, (LPOVERLAPPED)io_context);
 		Sleep(1000);
 	}
+}
+VOID Server::SetAcceptHandler(std::function<void(IoContext *)> handler)
+{
+	accept_handler_ = std::move(handler);
+}
+VOID Server::SetReceiveHandler(std::function<void(IoContext *)> handler)
+{
+	receive_handler_ = std::move(handler);
+}
+VOID Server::SetSendHandler(std::function<void(IoContext *)> handler)
+{
+	send_handler_ = std::move(handler);
+}
+VOID Server::SetDisconnectHandler(std::function<void(IoContext *)> handler)
+{
+	disconnect_handler_ = std::move(handler);
+}
+VOID Server::AcceptHandler(IoContext * io_context)
+{
+	if (accept_handler_ != nullptr)
+		thread_pool_->Enqueue(accept_handler_, io_context);
+}
+VOID Server::ReceiveHandler(IoContext * io_context)
+{
+	if (receive_handler_ != nullptr)
+		thread_pool_->Enqueue(receive_handler_, io_context);
+}
+VOID Server::SendHandler(IoContext * io_context)
+{
+	if (send_handler_ != nullptr)
+		thread_pool_->Enqueue(send_handler_, io_context);
+}
+VOID Server::DisconnectHandler(IoContext * io_context)
+{
+	if (disconnect_handler_ != nullptr)
+		thread_pool_->Enqueue(disconnect_handler_, io_context);
 }
 void Server::PrintError(wchar_t * target, DWORD error_code)
 {

@@ -7,6 +7,7 @@ enum IoType
 	IO_ACCEPT,
 	IO_RECV_READY,
 	IO_RECV,
+	IO_SEND,
 	IO_CONNECT,
 	IO_DISCONNECT
 };
@@ -21,4 +22,5 @@ struct IoContext
 	Client * client_;
 	WSABUF buffer_;
 	IoType io_type_;
+	DWORD received_;
 };

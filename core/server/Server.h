@@ -32,6 +32,15 @@ public:
 	static VOID IocpWork(Server &server);
 	VOID Run();
 
+	VOID SetAcceptHandler(std::function<void(IoContext *)>);
+	VOID SetReceiveHandler(std::function<void(IoContext *)>);
+	VOID SetSendHandler(std::function<void(IoContext *)>);
+	VOID SetDisconnectHandler(std::function<void(IoContext *)>);
+	VOID AcceptHandler(IoContext *);
+	VOID ReceiveHandler(IoContext *);
+	VOID SendHandler(IoContext *);
+	VOID DisconnectHandler(IoContext *);
+
 	static LPFN_DISCONNECTEX DisconnectEx;
 	static LPFN_ACCEPTEX AcceptEx;
 	static LPFN_CONNECTEX ConnectEx;
@@ -43,8 +52,11 @@ private:
 	HANDLE completion_port_;
 	SOCKET listen_socket_;
 	USHORT listen_port_;
-
     ObjectPool<IoContext> io_context_pool_;
+	std::function<void(IoContext *)> accept_handler_;
+	std::function<void(IoContext *)> receive_handler_;
+	std::function<void(IoContext *)> send_handler_;
+	std::function<void(IoContext *)> disconnect_handler_;
 
 	void PrintError(wchar_t * target, DWORD error_code);
 };	
