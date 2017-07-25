@@ -68,6 +68,8 @@ VOID Server::Init()
 		for (int i = 0; i < WORKER_AMOUNT; ++i)
 			thread_pool_->Enqueue(IocpWork, *this);
 	}
+
+    // Preallocate pools
 }
 VOID Server::SetListenPort(USHORT port)
 {
@@ -119,9 +121,12 @@ VOID Server::Run()
 	
 	while (TRUE) {
 		DWORD received_bytes;
-		Client * new_client = new Client();
+
+		Client * new_client = reinterpret_cast<Client*>(client_pool_.Malloc());
+        new (new_client) Client();
+        
 		new_client->socket_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-		IoContext * io_context = new IoContext(new_client, IO_ACCEPT);
+		IoContext * io_context = io_context_pool_.Construct(IoContext(new_client, IO_ACCEPT));
 		SOCKET client_socket = io_context->client_->socket_;
 		
 		auto result = CreateIoCompletionPort((HANDLE)client_socket, completion_port_, (ULONG_PTR)client_socket, 0);

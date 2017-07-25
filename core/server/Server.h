@@ -15,6 +15,8 @@
 #include "ClientManager.h"
 #include "Client.h"
 
+#include "memory_pool.hpp"
+
 #define WORKER_AMOUNT 16
 
 namespace core
@@ -43,6 +45,9 @@ private:
 	HANDLE completion_port_;
 	SOCKET listen_socket_;
 	USHORT listen_port_;
+
+    ObjectPool<Client> client_pool_;
+    ObjectPool<IoContext> io_context_pool_;
 
 	void PrintError(wchar_t * target, DWORD error_code);
 };	
