@@ -79,7 +79,6 @@ VOID Server::IocpWork(Server &server)
 		IoContext * io_context = nullptr;
 		ULONG_PTR key = 0;
 		GetQueuedCompletionStatus(server.completion_port_, &received_bytes, (PULONG_PTR)&key, (LPOVERLAPPED *)&io_context, INFINITE);
-		// GetClient()로 변경 필요
 		auto client = io_context->client_;
 
 		switch (io_context->io_type_) {

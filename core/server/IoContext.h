@@ -14,7 +14,6 @@ enum IoType
 class Client;
 struct IoContext
 {
-	IoContext();
 	IoContext(Client * client, IoType io_type);
 	~IoContext();
 

@@ -17,7 +17,7 @@ public:
 
 	SOCKET socket_;
 	char * nickname_;
-	char * send_buffer_;
-	char * recv_buffer_;
+	char send_buffer_[SEND_BUFFER_SIZE];
+	char recv_buffer_[RECV_BUFFER_SIZE];
 };
 
