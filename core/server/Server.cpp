@@ -68,8 +68,6 @@ VOID Server::Init()
 		for (int i = 0; i < WORKER_AMOUNT; ++i)
 			thread_pool_->Enqueue(IocpWork, *this);
 	}
-
-    // Preallocate pools
 }
 VOID Server::SetListenPort(USHORT port)
 {
@@ -99,7 +97,7 @@ VOID Server::IocpWork(Server &server)
 				io_result = client->PrepareReceive();
 				break;
 			case IO_DISCONNECT:
-				server.client_manager_->DeleteClient(client);
+				server.client_manager_->RemoveClient(client);
 				io_result = true;
 				break;
 			default:
@@ -122,8 +120,7 @@ VOID Server::Run()
 	while (TRUE) {
 		DWORD received_bytes;
 
-		Client * new_client = reinterpret_cast<Client*>(client_pool_.Malloc());
-        new (new_client) Client();
+		Client * new_client = client_manager_->NewClient();
         
 		new_client->socket_ = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 		IoContext * io_context = io_context_pool_.Construct(IoContext(new_client, IO_ACCEPT));
