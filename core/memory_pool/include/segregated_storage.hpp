@@ -11,22 +11,11 @@ namespace core {
 class Pool;
 
 class segregated_storage {
-private:
-    friend class Pool;
-    
+public:
     segregated_storage(std::size_t chunk_size)
         : first_(nullptr)
     {
         first_ = nullptr;
-    }
-
-    ~segregated_storage()
-    {
-        while (first_ != nullptr) {
-            void* next = next_of(first_);
-            free(first_);
-            first_ = next;
-        }
     }
 
     void* malloc()

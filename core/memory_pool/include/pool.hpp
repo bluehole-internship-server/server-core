@@ -12,25 +12,25 @@
 
 namespace core {
 
-class singleton_pool;
-
-class Pool {
+class Pool : private segregated_storage {
 public:
     explicit Pool(const std::size_t requested_size)
-        : next_size_(32)
-        , alloc_size_(std::max(requested_size, sizeof(void*)))
-        , storage_(std::max(requested_size, sizeof(void*)))
+        : next_size_(64)
+        , alloc_size_((std::max)(requested_size, sizeof(void*)))
+        , segregated_storage((std::max)(requested_size, sizeof(void*)))
+        , first_(nullptr)
     {
     }
 
     ~Pool()
     {
+        PurgeMemory();
     }
 
-    void* Malloc()
+    virtual void* Malloc() 
     {
         if (!Empty()) {
-            return storage_.malloc();
+            return storage().malloc();
         }
         return resize_and_malloc();
     }
@@ -40,24 +40,34 @@ public:
         // TODO
     }
 
-    inline bool PurgeMemory()
+    bool PurgeMemory()
     {
-        new (&storage_) segregated_storage(alloc_size_);
+        while (first_ != nullptr) {
+            void* next = next_of(first_);
+            ::free(first_);
+            first_ = next;
+        }
+        next_size_ = 32;
+
+        storage().first_ = nullptr;        
         return true;
     }
 
-    inline void Free(void* const chunk)
+    virtual inline void Free(void* const chunk)
     {
-        storage_.free(chunk);
+        storage().free(chunk);
     }
 
     inline bool Empty()
     {
-        return storage_.empty();
+        return storage().empty();
     }
 
 private:
-    segregated_storage storage_;
+    segregated_storage& storage()
+    {
+        return *this;
+    }
 
     std::size_t next_size_;
     std::size_t alloc_size_;
@@ -66,15 +76,21 @@ private:
     {
         std::size_t total_size = next_size_ * alloc_size_;
 
-        char* ptr = (char*)malloc(total_size);
+        char* ptr = (char*)::malloc(total_size +
+            /* size of simple header */ sizeof(void*));
+        
         if (ptr == 0) return 0;
+
+        storage().add_block(ptr + sizeof(void*), total_size, alloc_size_);
+
+        next_of(ptr) = first_;
+        first_ = ptr;
 
         next_size_ <<= 1;
 
-        storage_.add_block(ptr, total_size, alloc_size_);
-
-        return storage_.malloc();
+        return storage().malloc();
     }
+
+    void* first_;
 };
 }
-

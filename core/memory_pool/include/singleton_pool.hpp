@@ -7,14 +7,9 @@
 #include <mutex>
 
 #include "pool.hpp"
+#include "null_mutex.hpp"
 
 namespace core {
-
-class null_mutex {
-public:
-    inline void lock() {};
-    inline void unlock() {};
-};
 
 template <typename Tag,
     unsigned RequestedSize = sizeof(Tag),
@@ -23,19 +18,16 @@ class SingletonPool {
 public:
     static void* Malloc()
     {
-        std::lock_guard<Mutex> g(mutex_);
-        return get_pool().Malloc();
+        return pool_.Malloc();
     }
 
     static void Free(void* const chunk)
     {
-        std::lock_guard<Mutex> g(mutex_);
-        get_pool().Free(chunk);
+        pool_.Free(chunk);
     }
 
     static bool PurgeMemory()
     {
-        std::lock_guard<Mutex> g(mutex_);
         return pool_.PurgeMemory();
     }
 
@@ -50,7 +42,7 @@ private:
         return pool_;
     }
 
-    static pool pool_;
+    static __declspec(thread) __declspec(align(64)) pool pool_;
     static Mutex mutex_;
 
     SingletonPool() {}
