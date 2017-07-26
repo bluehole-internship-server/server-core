@@ -2,6 +2,7 @@
 #include <WinSock2.h>
 #include <stdio.h>
 #include "IoContext.h"
+#include "Buffer.h"
 
 #define SEND_BUFFER_SIZE 32
 #define RECV_BUFFER_SIZE 2560
@@ -16,11 +17,12 @@ public:
 	BOOL Receive();
 	BOOL PostReceive(DWORD);
 	BOOL Send(char *, DWORD);
+	BOOL PostSend(DWORD);
 	BOOL Disconnect();
 
 	SOCKET socket_;
 	char * nickname_;
-	char send_buffer_[SEND_BUFFER_SIZE];
-	char recv_buffer_[RECV_BUFFER_SIZE];
+	Buffer send_buffer_;
+	Buffer recv_buffer_;
 };
 }

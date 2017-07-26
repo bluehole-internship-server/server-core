@@ -153,9 +153,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Buffer.h" />
     <ClInclude Include="Client.h" />
     <ClInclude Include="ClientManager.h" />
     <ClInclude Include="IoContext.h" />
+    <ClInclude Include="Packet.h" />
     <ClInclude Include="Server.h" />
   </ItemGroup>
   <ItemGroup>

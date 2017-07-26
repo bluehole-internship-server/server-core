@@ -18,10 +18,6 @@ Server::~Server()
 VOID Server::Init()
 {
 	int result = 0;
-	accept_handler_ = nullptr;
-	receive_handler_ = nullptr;
-	send_handler_ = nullptr;
-	disconnect_handler_ = nullptr;
 
 	// WinSock Init
 	WSADATA wsa_data;
@@ -68,7 +64,7 @@ VOID Server::Init()
 	 
 	// Create New Thread Pool
 	if (thread_pool_ == nullptr) {
-		thread_pool_ = new ThreadPool(WORKER_AMOUNT);
+		thread_pool_ = new ThreadPool(WORKER_AMOUNT + 10);
 		for (int i = 0; i < WORKER_AMOUNT; ++i)
 			thread_pool_->Enqueue(IocpWork, *this);
 	}
@@ -97,12 +93,12 @@ VOID Server::IocpWork(Server &server)
 				io_result = client->Receive();
 				break;
 			case IO_RECV:
+				server.ReceiveHandler(io_context);
 				client->PostReceive(received_bytes);
 				io_result = client->PrepareReceive();
-				server.ReceiveHandler(io_context);
 				break;
 			case IO_SEND:
-				io_result = true;
+				io_result = client->PostSend(received_bytes);
 				server.SendHandler(io_context);
 				break;
 			case IO_DISCONNECT:
@@ -162,22 +158,22 @@ VOID Server::SetDisconnectHandler(std::function<void(IoContext *)> handler)
 VOID Server::AcceptHandler(IoContext * io_context)
 {
 	if (accept_handler_ != nullptr)
-		thread_pool_->Enqueue(accept_handler_, io_context);
+		accept_handler_(io_context);
 }
 VOID Server::ReceiveHandler(IoContext * io_context)
 {
 	if (receive_handler_ != nullptr)
-		thread_pool_->Enqueue(receive_handler_, io_context);
+		receive_handler_(io_context);
 }
 VOID Server::SendHandler(IoContext * io_context)
 {
 	if (send_handler_ != nullptr)
-		thread_pool_->Enqueue(send_handler_, io_context);
+		send_handler_(io_context);
 }
 VOID Server::DisconnectHandler(IoContext * io_context)
 {
 	if (disconnect_handler_ != nullptr)
-		thread_pool_->Enqueue(disconnect_handler_, io_context);
+		disconnect_handler_(io_context);
 }
 void Server::PrintError(wchar_t * target, DWORD error_code)
 {

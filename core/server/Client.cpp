@@ -5,6 +5,8 @@ namespace core
 {
 Client::Client()
 {
+	send_buffer_.Init(SEND_BUFFER_SIZE);
+	recv_buffer_.Init(RECV_BUFFER_SIZE);
 }
 Client::~Client()
 {
@@ -26,31 +28,44 @@ BOOL Client::Receive()
 	IoContext * recv_context = new IoContext(this, IO_RECV);
 	DWORD recieved_bytes = 0;
 	DWORD flags = 0;
-	recv_context->buffer_.len = RECV_BUFFER_SIZE;
-	recv_context->buffer_.buf = recv_buffer_;
+	recv_context->buffer_.len = recv_buffer_.GetRemained();
+	recv_context->buffer_.buf = recv_buffer_.GetBuffer();
 
 	if (WSARecv(socket_, &recv_context->buffer_, 1, &recieved_bytes, &flags, (LPWSAOVERLAPPED)recv_context, NULL) == SOCKET_ERROR)
 		return FALSE;
-
 	return TRUE;
 }
 BOOL Client::PostReceive(DWORD received_bytes)
 {
 	wprintf(L"Received.\n");
+	UWORD packet_size = ((UWORD)*(recv_buffer_.Read()));
+	if(received_bytes >= packet_size - recv_buffer_.offset_)
+	{
+		recv_buffer_.SetHead(sizeof(UWORD));
+		recv_buffer_.Produce(packet_size + sizeof(UWORD));
+		*(recv_buffer_.GetBuffer()) = 0;
+		printf("Received Data : %s\n", recv_buffer_.Read());
+		recv_buffer_.Consume(packet_size + sizeof(UWORD));
+	}
 
-	recv_buffer_[received_bytes] = 0;
-	printf("Received Data : %s\n", recv_buffer_);
 	return TRUE;
 }
 BOOL Client::Send(char * data, DWORD size)
 {
 	IoContext * send_context = new IoContext(this, IO_SEND);
-	memmove(send_buffer_, data, size);
-	send_context->buffer_.buf = send_buffer_;
+
+	send_buffer_.Produce(size);
+	memcpy(send_buffer_.GetBuffer(), data, size);
 	send_context->buffer_.len = size;
+	send_context->buffer_.buf = send_buffer_.GetBuffer();
 	DWORD sent, flags;
 	WSASend(socket_, &(send_context->buffer_), 1, &sent, 0, (LPWSAOVERLAPPED)send_context, nullptr);
-	return 0;
+	return TRUE;
+}
+BOOL Client::PostSend(DWORD sent_bytes)
+{
+	send_buffer_.Consume(sent_bytes);
+	return TRUE;
 }
 BOOL Client::Disconnect()
 {
