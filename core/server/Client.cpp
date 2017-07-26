@@ -35,7 +35,7 @@ BOOL Client::Receive()
 		return FALSE;
 	return TRUE;
 }
-BOOL Client::PostReceive(DWORD received_bytes)
+BOOL Client::PostReceive(DWORD received_bytes, std::function<void(IoContext *)>& handler, IoContext& io_context)
 {
 	wprintf(L"Received.\n");
 	UWORD packet_size = ((UWORD)*(recv_buffer_.Read()));
@@ -45,6 +45,7 @@ BOOL Client::PostReceive(DWORD received_bytes)
 		recv_buffer_.Produce(packet_size + sizeof(UWORD));
 		*(recv_buffer_.GetBuffer()) = 0;
 		printf("Received Data : %s\n", recv_buffer_.Read());
+		handler(&io_context);
 		recv_buffer_.Consume(packet_size + sizeof(UWORD));
 	}
 
@@ -53,12 +54,13 @@ BOOL Client::PostReceive(DWORD received_bytes)
 BOOL Client::Send(char * data, DWORD size)
 {
 	IoContext * send_context = new IoContext(this, IO_SEND);
+	DWORD sent, flags;
 
-	send_buffer_.Produce(size);
 	memcpy(send_buffer_.GetBuffer(), data, size);
 	send_context->buffer_.len = size;
 	send_context->buffer_.buf = send_buffer_.GetBuffer();
-	DWORD sent, flags;
+	send_buffer_.Produce(size);
+		
 	WSASend(socket_, &(send_context->buffer_), 1, &sent, 0, (LPWSAOVERLAPPED)send_context, nullptr);
 	return TRUE;
 }

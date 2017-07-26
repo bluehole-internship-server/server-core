@@ -93,8 +93,7 @@ VOID Server::IocpWork(Server &server)
 				io_result = client->Receive();
 				break;
 			case IO_RECV:
-				server.ReceiveHandler(io_context);
-				client->PostReceive(received_bytes);
+				client->PostReceive(received_bytes, server.receive_handler_, *io_context);
 				io_result = client->PrepareReceive();
 				break;
 			case IO_SEND:

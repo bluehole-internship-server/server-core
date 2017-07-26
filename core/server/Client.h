@@ -16,6 +16,7 @@ public:
 	BOOL PrepareReceive();
 	BOOL Receive();
 	BOOL PostReceive(DWORD);
+	BOOL PostReceive(DWORD, std::function<void(IoContext *)>&, IoContext&);
 	BOOL Send(char *, DWORD);
 	BOOL PostSend(DWORD);
 	BOOL Disconnect();
