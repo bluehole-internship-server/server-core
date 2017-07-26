@@ -8,6 +8,7 @@ namespace core
 {
 class ClientManager
 {
+friend class Server;
 public:
 	ClientManager();
 	~ClientManager();
@@ -16,7 +17,7 @@ public:
 	VOID AddClient(Client *);
 	VOID RemoveClient(Client *);
 
-private:
+protected:
 	std::vector<Client *>clients_;
 	core::ObjectPool<Client> client_pool_;
 };

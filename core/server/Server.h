@@ -40,6 +40,7 @@ public:
 	VOID ReceiveHandler(IoContext *);
 	VOID SendHandler(IoContext *);
 	VOID DisconnectHandler(IoContext *);
+	std::vector<Client *>& GetAllClient();
 
 	static LPFN_DISCONNECTEX DisconnectEx;
 	static LPFN_ACCEPTEX AcceptEx;

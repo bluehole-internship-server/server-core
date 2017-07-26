@@ -174,6 +174,10 @@ VOID Server::DisconnectHandler(IoContext * io_context)
 	if (disconnect_handler_ != nullptr)
 		disconnect_handler_(io_context);
 }
+std::vector<Client*>& Server::GetAllClient()
+{
+	return client_manager_->clients_;
+}
 void Server::PrintError(wchar_t * target, DWORD error_code)
 {
 	wprintf(L"%s가 실패했습니다. 에러 코드: %d\n", target, error_code);
