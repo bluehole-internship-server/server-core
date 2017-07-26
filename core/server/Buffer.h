@@ -1,6 +1,7 @@
 #pragma once
 #include <crtdbg.h>
 #include <string.h>
+#include "Spinlock.h"
 
 struct Buffer
 {
@@ -8,6 +9,7 @@ struct Buffer
 	unsigned int size_;
 	unsigned int offset_;
 	unsigned int head_;
+	core::Spinlock lock_;
 
 	~Buffer()
 	{
@@ -23,9 +25,9 @@ struct Buffer
 		SecureZeroMemory(buffer_, size_);
 	}
 
-	void SetHead(unsigned int length)
+	void SetHead(unsigned int offset)
 	{
-		head_ += length;
+		head_ = offset;
 	}
 
 	char * Read()
@@ -39,10 +41,12 @@ struct Buffer
 		offset_ -= length;
 		head_ = 0;
 		_ASSERT(offset_ >= 0);
+		lock_.Unlock();
 	}
 
 	void Produce(unsigned int length)
 	{
+		lock_.Lock();
 		offset_ += length;
 		_ASSERT(offset_ <= size_);
 	}
