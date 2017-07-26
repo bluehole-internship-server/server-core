@@ -17,7 +17,8 @@ Server::~Server()
 VOID Server::Init()
 {
 	client_manager_ = new ClientManager();
-	
+	SetPacketHeaderSize(DEFAULT_PACKET_HEADER_SIZE);
+
 	int result = 0;
 
 	// WinSock Init

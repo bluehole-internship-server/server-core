@@ -16,6 +16,7 @@
 #include "memory_pool.hpp"
 
 #define WORKER_AMOUNT 16
+#define DEFAULT_PACKET_HEADER_SIZE 2
 
 namespace core
 {
@@ -43,6 +44,7 @@ public:
 	VOID DisconnectHandler(IoContext *);
 	std::vector<Client *>& GetAllClient();
 
+	static USHORT packet_header_size_;
 	static LPFN_DISCONNECTEX DisconnectEx;
 	static LPFN_ACCEPTEX AcceptEx;
 	static LPFN_CONNECTEX ConnectEx;
@@ -62,7 +64,6 @@ private:
 
 	void PrintError(wchar_t * target, DWORD error_code);
 };	
-USHORT packet_header_size_ = 2;
 }
 
 #include "Server.inl"

@@ -41,17 +41,16 @@ BOOL Client::PostReceive(DWORD received_bytes, std::function<void(IoContext *)>&
 	UWORD packet_size = ((UWORD)*(recv_buffer_.Read()));
 	if(received_bytes >= packet_size - recv_buffer_.offset_)
 	{
-		recv_buffer_.Produce(packet_header_size_ + packet_size);
+		recv_buffer_.Produce(Server::packet_header_size_ + packet_size);
 		handler(&io_context);
-		recv_buffer_.Consume(packet_header_size_ + packet_size);
+		recv_buffer_.Consume(Server::packet_header_size_ + packet_size);
 	}
-
 	return TRUE;
 }
 BOOL Client::Send(char * data, DWORD size)
 {
 	IoContext * send_context = new IoContext(this, IO_SEND);
-	DWORD sent, flags;
+	DWORD sent;
 
 	memcpy(send_buffer_.GetBuffer(), data, size);
 	send_context->buffer_.len = size;
