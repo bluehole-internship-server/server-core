@@ -41,12 +41,9 @@ BOOL Client::PostReceive(DWORD received_bytes, std::function<void(IoContext *)>&
 	UWORD packet_size = ((UWORD)*(recv_buffer_.Read()));
 	if(received_bytes >= packet_size - recv_buffer_.offset_)
 	{
-		recv_buffer_.SetHead(sizeof(UWORD));
-		recv_buffer_.Produce(packet_size + sizeof(UWORD));
-		*(recv_buffer_.GetBuffer()) = 0;
-		printf("Received Data : %s\n", recv_buffer_.Read());
+		recv_buffer_.Produce(packet_header_size_ + packet_size);
 		handler(&io_context);
-		recv_buffer_.Consume(packet_size + sizeof(UWORD));
+		recv_buffer_.Consume(packet_header_size_ + packet_size);
 	}
 
 	return TRUE;

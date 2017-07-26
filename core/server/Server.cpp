@@ -10,13 +10,14 @@ namespace core
 {
 Server::Server()
 {
-	client_manager_ = new ClientManager();
 }
 Server::~Server()
 {
 }
 VOID Server::Init()
 {
+	client_manager_ = new ClientManager();
+	
 	int result = 0;
 
 	// WinSock Init
@@ -137,6 +138,10 @@ VOID Server::Run()
 		AcceptEx(listen_socket_, client_socket, accept_buffer_, 0, sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, &received_bytes, (LPOVERLAPPED)io_context);
 		Sleep(1000);
 	}
+}
+VOID Server::SetPacketHeaderSize(USHORT size)
+{
+	packet_header_size_ = size;
 }
 VOID Server::SetAcceptHandler(std::function<void(IoContext *)> handler)
 {

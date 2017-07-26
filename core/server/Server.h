@@ -32,6 +32,7 @@ public:
 	static VOID IocpWork(Server &server);
 	VOID Run();
 
+	VOID SetPacketHeaderSize(USHORT size);
 	VOID SetAcceptHandler(std::function<void(IoContext *)>);
 	VOID SetReceiveHandler(std::function<void(IoContext *)>);
 	VOID SetSendHandler(std::function<void(IoContext *)>);
@@ -61,6 +62,7 @@ private:
 
 	void PrintError(wchar_t * target, DWORD error_code);
 };	
+USHORT packet_header_size_ = 2;
 }
 
 #include "Server.inl"
