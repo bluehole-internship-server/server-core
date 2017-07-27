@@ -65,5 +65,4 @@ private:
 	void PrintError(wchar_t * target, DWORD error_code);
 };	
 }
-
 #include "Server.inl"

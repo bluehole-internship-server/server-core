@@ -1,5 +1,6 @@
 #include "Server.h"
 
+USHORT core::Server::packet_header_size_ = 2;
 LPFN_DISCONNECTEX core::Server::DisconnectEx = nullptr;
 LPFN_ACCEPTEX core::Server::AcceptEx = nullptr;
 LPFN_CONNECTEX core::Server::ConnectEx = nullptr;
