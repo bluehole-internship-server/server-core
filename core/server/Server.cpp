@@ -120,6 +120,7 @@ VOID Server::IocpWork(Server &server)
 		{
 			client->Disconnect();
 		}
+		server.io_context_pool_.Destroy(io_context);
 	}
 }
 VOID Server::Run()
@@ -141,7 +142,7 @@ VOID Server::Run()
 		_ASSERT(result == completion_port_);
 				
 		AcceptEx(listen_socket_, client_socket, accept_buffer_, 0, sizeof(SOCKADDR_IN) + 16, sizeof(SOCKADDR_IN) + 16, &received_bytes, (LPOVERLAPPED)io_context);
-		Sleep(1000);
+		Sleep(100);
 	}
 }
 VOID Server::SetPacketHeaderSize(USHORT size)
