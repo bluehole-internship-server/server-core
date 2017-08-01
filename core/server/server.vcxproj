@@ -165,7 +165,6 @@
     <ClCompile Include="ClientManager.cpp" />
     <ClCompile Include="IoContext.cpp" />
     <ClCompile Include="Server.cpp" />
-    <ClCompile Include="소스.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Server.inl" />
