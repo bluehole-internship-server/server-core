@@ -23,7 +23,6 @@ VOID ClientManager::AddClient(Client * client)
 {
 	SpinlockGuard lock(lock_);
 	clients_.push_back(client);
-	puts("Added.");
 }
 VOID ClientManager::RemoveClient(Client * client)
 {
@@ -32,7 +31,6 @@ VOID ClientManager::RemoveClient(Client * client)
 	if (it != clients_.end()) {
 		DeleteClient(*it);
 		clients_.erase(it);
-		puts("Deleted.");
 	}
 }
 }

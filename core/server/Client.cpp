@@ -10,7 +10,6 @@ Client::Client()
 }
 Client::~Client()
 {
-	puts("Good Bye.");
 }
 BOOL Client::PrepareReceive()
 {

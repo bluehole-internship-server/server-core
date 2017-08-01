@@ -112,7 +112,7 @@ VOID Server::IocpWork(Server &server)
 				server.PostDisconnectHandler(io_context);
 				break;
 			default:
-				wprintf(L"What? %d\n", io_context->io_type_);
+				throw "Unknown Io Type";
 				break;
 		}
 

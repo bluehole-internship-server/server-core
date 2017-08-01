@@ -1,4 +1,5 @@
 #include "IoContext.h"
+#include <stdio.h>
 
 namespace core
 {
@@ -11,5 +12,6 @@ IoContext::IoContext(Client * client, IoType io_type) : client_(client), io_type
 }
 IoContext::~IoContext()
 {
+	puts("IoContext Deleted.");
 }
 }
