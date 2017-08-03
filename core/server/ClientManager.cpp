@@ -2,7 +2,7 @@
 
 namespace core
 {
-ClientManager::ClientManager()
+ClientManager::ClientManager() : current_(0), limit_(10000)
 {
 }
 ClientManager::~ClientManager()
@@ -10,13 +10,20 @@ ClientManager::~ClientManager()
 }
 Client * ClientManager::NewClient()
 {
-	Client * new_client = reinterpret_cast<Client*>(client_pool_.Malloc());
-	new (new_client) Client();
-	return new_client;
+	if (current_ < limit_) {
+		Client * new_client = reinterpret_cast<Client*>(client_pool_.Malloc());
+		new (new_client) Client();
+		++current_;
+		return new_client;
+	} 
+	else {
+		return nullptr;
+	}
 }
 VOID ClientManager::DeleteClient(Client * client)
 {
 	client_pool_.Destroy(client);
+	--current_;
 }
 VOID ClientManager::AddClient(Client * client)
 {
