@@ -6,6 +6,7 @@ LPFN_ACCEPTEX core::Server::AcceptEx = nullptr;
 LPFN_CONNECTEX core::Server::ConnectEx = nullptr;
 char core::Server::accept_buffer_[64] = { 0, };
 core::ThreadPool * core::Server::thread_pool_ = nullptr;
+core::ObjectPool<core::IoContext> * core::Server::io_context_pool_ = nullptr;
 
 namespace core 
 {
@@ -71,6 +72,11 @@ VOID Server::Init()
 		for (int i = 0; i < WORKER_AMOUNT; ++i)
 			thread_pool_->Enqueue(IocpWork, *this);
 	}
+	
+	// Create New IoContext Pool
+	if(io_context_pool_ == nullptr){
+		io_context_pool_ = new core::ObjectPool<core::IoContext>;
+	}
 }
 VOID Server::SetListenPort(USHORT port)
 {
@@ -120,7 +126,7 @@ VOID Server::IocpWork(Server &server)
 		{
 			client->Disconnect();
 		}
-		server.io_context_pool_.Destroy(io_context);
+		io_context_pool_->Destroy(io_context);
 	}
 }
 VOID Server::Run()
