@@ -16,11 +16,13 @@ public:
         : port_(port)
         , IP_(IP)
     {
+        memset(&addr_, 0, sizeof(addr_));
         addr_.sin_family = AF_INET;
         addr_.sin_port = htons(port_);
-        InetPton(AF_INET, (TCHAR*)IP, &addr_.sin_addr);
+        InetPtonA(AF_INET, IP, &addr_.sin_addr);
     }
-    Endpoint() { }
+
+    Endpoint() { memset(&addr_, 0, sizeof(addr_)); }
 
     bool operator<(const Endpoint& rep) const {
         /*

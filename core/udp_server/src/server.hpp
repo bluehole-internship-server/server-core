@@ -24,16 +24,26 @@ public:
         session_manager_.SetAcceptHandler(ahandler);
     }
 
+    inline void SetAcceptHandler(void (*ahandler)(Session*))
+    {
+        session_manager_.SetAcceptHandler(
+            std::function<void(Session*)>(ahandler));
+    }
+
     inline void SetPacketHandler(std::function<void(Session*, Packet&)>
         &phandler)
     {
         session_manager_.SetPacketHandler(phandler);
     }
 
+    inline void SetPacketHandler(void(*phandler)(Session*, Packet&))
+    {
+        session_manager_.SetPacketHandler(
+            std::function<void(Session*, Packet&)>(phandler));
+    }
+
 private:
     SessionManager session_manager_;
-
-    // 1 is for accept handler, 2 is for packet handler
 
     short port_;
     short num_thread_;

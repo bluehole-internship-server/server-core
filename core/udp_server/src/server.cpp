@@ -8,7 +8,7 @@ namespace core::udp {
 Server::Server(short port, int num_thread)
     : port_(port)
     , num_thread_(num_thread)
-    , session_manager_(Endpoint(port, "0.0.0.0"), num_thread)
+    , session_manager_(Endpoint(port, "127.0.0.1"), num_thread)
 {
 }
 

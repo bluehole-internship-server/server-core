@@ -39,7 +39,7 @@ private:
     HANDLE iocp_;
     void iocp_task();
     
-    Socket socket_;
+    std::unique_ptr<Socket> socket_;
     
     std::vector<std::thread> threads_;
     int num_thread_;

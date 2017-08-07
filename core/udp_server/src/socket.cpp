@@ -24,7 +24,6 @@ Socket::Socket(Endpoint &endpoint, HANDLE iocp)
     socket_ = ::socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
     ::bind(socket_, (const sockaddr*)&endpoint_.Addr(),
         sizeof(endpoint_.Addr()));
-
     if (iocp_ != nullptr &&
         CreateIoCompletionPort((HANDLE)socket_, iocp_, (ULONG_PTR)this, 0)) {
         is_with_iocp_ = true;
@@ -43,7 +42,6 @@ Socket::Socket(HANDLE iocp)
     : from_len(sizeof(remote_endpoint_.Addr()))
 {
     socket_ = ::socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
-
     if (iocp_ != nullptr &&
         CreateIoCompletionPort((HANDLE)socket_, iocp_, (ULONG_PTR)this, 0)) {
         is_with_iocp_ = true;
@@ -56,9 +54,10 @@ void Socket::Recv()
     if (!is_with_iocp_) return;
 
     unsigned long flags = 0;
-    WSARecvFrom(socket_, &(read_io_data_.wsa_buf), 1, nullptr, &flags,
+
+    WSARecvFrom(socket_, &(read_io_data_.wsa_buf), 1, &received_bytes, &flags,
         (sockaddr*)&remote_endpoint_.Addr(), &from_len,
-        &(read_io_data_.overlapped), nullptr);
+        &(read_io_data_.overlapped), NULL);
 }
 
 void Socket::Send(Packet &packet, Endpoint &remote_endpoint, bool immediately)
@@ -82,9 +81,9 @@ void Socket::Send(Packet &packet, Endpoint &remote_endpoint, bool immediately)
         ptr_packet = &packet;
         ptr_endpoint = &remote_endpoint;
     }
-
+    write_io_data_.wsa_buf.len = packet.Size() + 4;
     WSASendTo(socket_, &(write_io_data_.wsa_buf), 1, nullptr, flags,
-        (sockaddr*)&ptr_endpoint->Addr(), sizeof(&ptr_endpoint->Addr()),
+        (sockaddr*)&ptr_endpoint->Addr(), sizeof(ptr_endpoint->Addr()),
         &(write_io_data_.overlapped), nullptr);
 }
 }

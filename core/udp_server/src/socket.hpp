@@ -23,6 +23,7 @@ private:
         {
             wsa_buf.buf = buffer;
             wsa_buf.len = socket_buf_size;
+            memset(&overlapped, 0, sizeof(overlapped));
         }
 
         OVERLAPPED overlapped;
@@ -75,6 +76,7 @@ private:
     Endpoint remote_endpoint_;
 
     int from_len;
+    unsigned long received_bytes;
 
     /* TODO : change this to mt queue, ptr vs obj */
     std::queue<send_request> send_req_queue_;
