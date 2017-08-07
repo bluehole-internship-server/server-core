@@ -7,6 +7,11 @@
 #include "packet.hpp"
 
 namespace core::udp {
+Packet::Packet(Packet &packet)
+    : data_(packet.data_)
+{
+}
+
 Packet::Packet(Packet &&packet)
 {
     std::swap(data_, packet.data_);

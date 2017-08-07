@@ -19,6 +19,7 @@ private:
     };
 
 public:
+    explicit Packet(Packet &packet);
     explicit Packet(Packet &&packet);
     explicit Packet(short size, short packet_id, const char* data);
     explicit Packet(const char* data);
@@ -28,6 +29,7 @@ public:
     const char* Data() { return data_->body; }
 
 private:
+    friend class Socket;
     std::shared_ptr<data> data_;
 };
 }

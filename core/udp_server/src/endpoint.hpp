@@ -20,6 +20,7 @@ public:
         addr_.sin_port = htons(port_);
         InetPton(AF_INET, (TCHAR*)IP, &addr_.sin_addr);
     }
+    Endpoint() { }
 
     inline short Port() { return port_; }
     inline const char* IP() { return IP_; }
