@@ -56,9 +56,9 @@ void Socket::Recv()
     if (!is_with_iocp_) return;
 
     unsigned long flags = 0;
-    WSARecvFrom(socket_, &(io_data_.read_wsa_buf), 1, nullptr, &flags,
+    WSARecvFrom(socket_, &(read_io_data_.wsa_buf), 1, nullptr, &flags,
         (sockaddr*)&remote_endpoint_.Addr(), &from_len,
-        &(io_data_.read_overlapped), nullptr);
+        &(read_io_data_.overlapped), nullptr);
 }
 
 void Socket::Send(Packet &packet, Endpoint &remote_endpoint, bool immediately)
@@ -83,8 +83,8 @@ void Socket::Send(Packet &packet, Endpoint &remote_endpoint, bool immediately)
         ptr_endpoint = &remote_endpoint;
     }
 
-    WSASendTo(socket_, &(io_data_.write_wsa_buf), 1, nullptr, flags,
+    WSASendTo(socket_, &(write_io_data_.wsa_buf), 1, nullptr, flags,
         (sockaddr*)&ptr_endpoint->Addr(), sizeof(&ptr_endpoint->Addr()),
-        &(io_data_.write_overlapped), nullptr);
+        &(write_io_data_.overlapped), nullptr);
 }
 }

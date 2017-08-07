@@ -9,10 +9,18 @@
 namespace core::udp {
 class Session {
 public:
-    Session(Socket &manager_socket, Endpoint &endpoint);
+    Session(Socket &manager_socket, Endpoint &endpoint)
+        : manager_socket_(manager_socket)
+        , endpoint_(endpoint)
+    {
+
+    }
 
     void* Data() { return data_; }
-    void Send(Packet& packet);
+    void Send(Packet& packet)
+    {
+        manager_socket_.Send(packet, endpoint_, false);
+    }
 
 private:
     void* data_;

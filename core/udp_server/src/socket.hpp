@@ -16,28 +16,18 @@
 namespace core::udp {
 class Socket {
 private:
+    friend class SessionManager;
     const static int socket_buf_size = 512;
     struct io_data {
-        enum Op {
-            READ,
-            WRITE
-        };
-
         io_data()
         {
-            read_wsa_buf.buf = read_buffer;
-            write_wsa_buf.buf = write_buffer;
-            read_wsa_buf.len = write_wsa_buf.len = socket_buf_size;
+            wsa_buf.buf = buffer;
+            wsa_buf.len = socket_buf_size;
         }
 
-        OVERLAPPED read_overlapped;
-        OVERLAPPED write_overlapped;
-        WSABUF read_wsa_buf;
-        WSABUF write_wsa_buf;
-        char write_buffer[socket_buf_size];
-        char read_buffer[socket_buf_size];
-
-        Op op;
+        OVERLAPPED overlapped;
+        WSABUF wsa_buf;
+        char buffer[socket_buf_size];
     };
 
     struct send_request {
@@ -45,7 +35,6 @@ private:
             : packet(packet_)
             , endpoint(endpoint_)
         {
-
         }
 
         send_request(send_request &&send_req)
@@ -53,6 +42,9 @@ private:
             , endpoint(std::move(send_req.endpoint))
         {
         }
+
+        send_request(send_request &send_req) = default;
+
         Packet packet;
         Endpoint endpoint;
     };
@@ -73,7 +65,9 @@ public:
 private:
     bool is_with_iocp_;
 
-    io_data io_data_;
+    io_data read_io_data_;
+    io_data write_io_data_;
+
     SOCKET socket_;
     HANDLE iocp_;
 

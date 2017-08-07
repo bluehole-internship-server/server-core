@@ -22,6 +22,16 @@ public:
     }
     Endpoint() { }
 
+    bool operator<(const Endpoint& rep) const {
+        /*
+        long laddr = *(long*)&addr_.sin_addr;
+        long raddr = *(long*)&addr_.sin_addr;
+        short lport = addr_.sin_port;
+        short rport = rep.addr_.sin_port;
+        */
+        return this < &rep;
+    }
+
     inline short Port() { return port_; }
     inline const char* IP() { return IP_; }
     inline sockaddr_in& Addr() { return addr_; }

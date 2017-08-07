@@ -6,8 +6,10 @@
 
 #pragma once
 
-#include <unordered_map>
+#include <map>
 #include <functional>
+#include <thread>
+#include <vector>
 
 #include "session.hpp"
 #include "socket.hpp"
@@ -34,13 +36,19 @@ public:
     }
 
 private:
+    HANDLE iocp_;
+    void iocp_task();
+    
     Socket socket_;
     
+    std::vector<std::thread> threads_;
     int num_thread_;
-    char is_inited_all;
 
+    char is_inited_all;
     std::function<void(Session*)> ahandler_;
     std::function<void(Session*, Packet&)> phandler_;
 
+    /* TODO */
+    std::map<Endpoint, Session*> sessions_;
 };
 }
