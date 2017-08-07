@@ -26,6 +26,14 @@ Packet::Packet(short size, short packet_type, const char* data)
     memcpy(data_->body, data, size);
 }
 
+Packet::Packet(short size, short packet_type)
+    : data_(std::make_shared<Packet::data>())
+{
+    if (size > MAX_PACKET_SIZE) return;
+    data_->size = size;
+    data_->packet_type = packet_type;
+}
+
 Packet::Packet(const char* data)
     : data_(std::make_shared<Packet::data>())
 {

@@ -21,7 +21,8 @@ private:
 public:
     explicit Packet(Packet &packet);
     explicit Packet(Packet &&packet);
-    explicit Packet(short size, short packet_id, const char* data);
+    explicit Packet(short size, short packet_type, const char* data);
+    explicit Packet(short size, short packet_type);
     explicit Packet(const char* data);
 
     short Size() { return data_->size; }
