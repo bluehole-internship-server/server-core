@@ -4,6 +4,8 @@
 
 #pragma once
 
+#define _WINSOCKAPI_
+
 #include <functional>
 
 #include "session_manager.hpp"
