@@ -12,11 +12,14 @@
 namespace core::udp {
 class Packet {
 private:
+
+#pragma pack(push, 1)
     struct data {
         short size;
         short packet_type;
         char body[MAX_PACKET_SIZE];
     };
+#pragma pack(pop)
 
 public:
     explicit Packet(Packet &packet);
