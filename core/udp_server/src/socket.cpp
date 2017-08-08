@@ -81,6 +81,7 @@ void Socket::Send(Packet &packet, Endpoint &remote_endpoint, bool immediately)
         ptr_packet = &packet;
         ptr_endpoint = &remote_endpoint;
     }
+    write_io_data_.wsa_buf.buf = reinterpret_cast<char*>(packet.data_.get());
     write_io_data_.wsa_buf.len = packet.Size() + 4;
     WSASendTo(socket_, &(write_io_data_.wsa_buf), 1, nullptr, flags,
         (sockaddr*)&ptr_endpoint->Addr(), sizeof(ptr_endpoint->Addr()),
