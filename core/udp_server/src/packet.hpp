@@ -4,8 +4,8 @@
 
 #pragma once
 
-// 508 + 4 == 512
-#define MAX_PACKET_SIZE 508
+// TODO
+#define MAX_PACKET_SIZE 5130
 
 #include <memory>
 
