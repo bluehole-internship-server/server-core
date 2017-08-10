@@ -18,8 +18,9 @@ class Socket {
 private:
     friend class SessionManager;
     const static int socket_buf_size = 512;
-    struct io_data {
-        io_data()
+    
+    struct read_io_data {
+        read_io_data()
         {
             wsa_buf.buf = buffer;
             wsa_buf.len = socket_buf_size;
@@ -29,6 +30,19 @@ private:
         OVERLAPPED overlapped;
         WSABUF wsa_buf;
         char buffer[socket_buf_size];
+    };
+
+    struct write_io_data {
+        write_io_data(Packet &packet)
+        {
+            wsa_buf.buf = packet.data_->body;
+            wsa_buf.len = packet.data_->size;
+            memset(&overlapped, 0, sizeof(overlapped));
+        }
+
+        OVERLAPPED overlapped;
+        WSABUF wsa_buf;
+        std::shared_ptr<Packet::data> data_;
     };
 
     struct send_request {
@@ -66,8 +80,7 @@ public:
 private:
     bool is_with_iocp_;
 
-    io_data read_io_data_;
-    io_data write_io_data_;
+    read_io_data read_io_data_;
 
     SOCKET socket_;
     HANDLE iocp_;

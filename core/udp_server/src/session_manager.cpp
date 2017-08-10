@@ -36,7 +36,7 @@ void SessionManager::iocp_task()
 {
     while (1) {
         Socket* socket = nullptr;
-        Socket::io_data* io_data = nullptr;
+        Socket::read_io_data* io_data = nullptr;
         unsigned long bytes;
         bool succ = GetQueuedCompletionStatus(iocp_, &bytes,
             (PULONG_PTR)&socket, (LPOVERLAPPED*)&io_data, INFINITE);
@@ -62,22 +62,9 @@ void SessionManager::iocp_task()
                 phandler_(it->second, Packet(io_data->buffer));
             }
             socket_->Recv();
-        } else if (io_data == &socket->write_io_data_) {
-            socket->mtx_send_req_queue_.lock();
-            std::queue<Socket::send_request>* queue =
-                &socket_->send_req_queue_;
-            if (queue->size() == 0) {
-                // can't be happen but..
-                socket->mtx_send_req_queue_.unlock();
-                return;
-            }
-            socket->send_req_queue_.pop();
-            if (queue->size() != 0) {
-                Socket::send_request req = queue->front();
-                socket->Send(req.packet, req.endpoint, true);
-            }
-            socket->mtx_send_req_queue_.unlock();
-            socket_->Recv();
+        } else {
+            Socket::write_io_data* ptr = (Socket::write_io_data*)io_data;
+            delete ptr;
         }
     }
 }

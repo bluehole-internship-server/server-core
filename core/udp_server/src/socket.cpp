@@ -62,29 +62,13 @@ void Socket::Recv()
 
 void Socket::Send(Packet &packet, Endpoint &remote_endpoint, bool immediately)
 {
+    /* TODO */
+    if (!is_with_iocp_) return;
     unsigned long flags = 0;
-    Packet* ptr_packet;
-    Endpoint* ptr_endpoint;
-
-    if (immediately == false) {
-        mtx_send_req_queue_.lock();
-        /* TODO : packet has to be preserved */
-        send_req_queue_.emplace(packet, remote_endpoint);
-        if (send_req_queue_.size() > 1) {
-            mtx_send_req_queue_.unlock();
-            return;
-        }
-        ptr_packet = &send_req_queue_.front().packet;
-        ptr_endpoint = &send_req_queue_.front().endpoint;
-        mtx_send_req_queue_.unlock();
-    } else {
-        ptr_packet = &packet;
-        ptr_endpoint = &remote_endpoint;
-    }
-    write_io_data_.wsa_buf.buf = reinterpret_cast<char*>(packet.data_.get());
-    write_io_data_.wsa_buf.len = packet.Size() + 4;
-    WSASendTo(socket_, &(write_io_data_.wsa_buf), 1, nullptr, flags,
-        (sockaddr*)&ptr_endpoint->Addr(), sizeof(ptr_endpoint->Addr()),
-        &(write_io_data_.overlapped), nullptr);
+    
+    write_io_data* _write_io_data = new write_io_data(packet);
+    WSASendTo(socket_, &(_write_io_data->wsa_buf), 1, nullptr, flags,
+        (sockaddr*)&remote_endpoint.Addr(), sizeof(remote_endpoint.Addr()),
+        &(_write_io_data->overlapped), nullptr);
 }
 }
