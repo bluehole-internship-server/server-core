@@ -5,7 +5,7 @@
 #pragma once
 
 // TODO
-#define MAX_PACKET_SIZE 5130
+#define MAX_PACKET_SIZE 65000
 
 #include <memory>
 

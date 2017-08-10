@@ -20,10 +20,10 @@ Packet::Packet(Packet &&packet)
 Packet::Packet(short size, short packet_type, const char* data)
     : data_(std::make_shared<Packet::data>())
 {
-    if (size > MAX_PACKET_SIZE) return;
+    if ((unsigned short)size > MAX_PACKET_SIZE) return;
     data_->size = size;
     data_->packet_type = packet_type;
-    memcpy(data_->body, data, size);
+    memcpy(data_->body, data, (unsigned short)size);
 }
 
 Packet::Packet(short size, short packet_type)

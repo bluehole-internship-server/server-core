@@ -35,8 +35,8 @@ private:
     struct write_io_data {
         write_io_data(Packet &packet)
         {
-            wsa_buf.buf = packet.data_->body;
-            wsa_buf.len = packet.data_->size;
+            wsa_buf.buf = (char*)packet.data_.get();
+            wsa_buf.len = (unsigned short)packet.data_->size + 4;
             memset(&overlapped, 0, sizeof(overlapped));
         }
 

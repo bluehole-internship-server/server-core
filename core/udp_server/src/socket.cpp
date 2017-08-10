@@ -64,8 +64,9 @@ void Socket::Send(Packet &packet, Endpoint &remote_endpoint, bool immediately)
 {
     /* TODO */
     if (!is_with_iocp_) return;
+
     unsigned long flags = 0;
-    
+
     write_io_data* _write_io_data = new write_io_data(packet);
     WSASendTo(socket_, &(_write_io_data->wsa_buf), 1, nullptr, flags,
         (sockaddr*)&remote_endpoint.Addr(), sizeof(remote_endpoint.Addr()),
