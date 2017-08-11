@@ -22,6 +22,11 @@ public:
         manager_socket_.Send(packet, endpoint_, false);
     }
 
+    Endpoint& GetEndpoint()
+    {
+        return endpoint_;
+    }
+
 private:
     void* data_;
     Socket &manager_socket_;

@@ -24,14 +24,17 @@ public:
 
     Endpoint() { memset(&addr_, 0, sizeof(addr_)); }
 
-    bool operator<(const Endpoint& rep) const {
-        /*
-        long laddr = *(long*)&addr_.sin_addr;
-        long raddr = *(long*)&addr_.sin_addr;
-        short lport = addr_.sin_port;
-        short rport = rep.addr_.sin_port;
-        */
-        return this < &rep;
+    bool operator<(const Endpoint& rep) const
+    {
+        return this->addr_.sin_addr.s_addr < rep.addr_.sin_addr.s_addr ||
+            ( this->addr_.sin_addr.s_addr == rep.addr_.sin_addr.s_addr &&
+              this->addr_.sin_port < rep.addr_.sin_port );
+    }
+
+    bool operator==(const Endpoint& rep) const
+    {
+        return this->addr_.sin_addr.s_addr == rep.addr_.sin_addr.s_addr &&
+            this->addr_.sin_port == rep.addr_.sin_port;
     }
 
     inline short Port() { return port_; }

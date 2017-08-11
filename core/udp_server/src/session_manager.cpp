@@ -49,18 +49,33 @@ void SessionManager::iocp_task()
             short type;
             size = *reinterpret_cast<short*>(io_data->buffer);
             type = *reinterpret_cast<short*>(io_data->buffer + 2);
-            if (bytes == 4 && size == 0 && type == -1) {
+
+            if (bytes == 4 && size == 2 && type == -1) { // SYN
                 Session* new_session = new Session(*socket_,
-                    socket->remote_endpoint_);
-                sessions_.insert({socket->remote_endpoint_, new_session});
-                ahandler_(new_session);
-                
-            } else if(size + 4 == bytes) {
+                    io_data->remote_endpoint);
+                pending_sessions_.insert({new_session->GetEndpoint(), new_session});
+                new_session->Send(Packet(2, -2, io_data->buffer + 4));
+            }
+            else if (bytes == 4 && size == 2 && type == -3) {
+                // Lock
+                auto it = pending_sessions_.find(io_data->remote_endpoint);
+                if (it == pending_sessions_.end()) continue;
+
+                Session* pending_session = it->second;
+
+                pending_sessions_.erase(it);
+                sessions_.insert({pending_session->GetEndpoint(), pending_session});
+                // Unlock
+    
+                ahandler_(pending_session);
+            }
+            else if (size + 4 == bytes) {
                 std::map<Endpoint, Session*>::iterator it;
-                it = sessions_.find(socket->remote_endpoint_);
+                it = sessions_.find(io_data->remote_endpoint);
                 if (it == sessions_.end()) continue;
                 phandler_(it->second, Packet(io_data->buffer));
             }
+
             socket_->Recv();
         } else {
             Socket::write_io_data* ptr = (Socket::write_io_data*)io_data;

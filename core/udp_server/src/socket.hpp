@@ -24,11 +24,14 @@ private:
         {
             wsa_buf.buf = buffer;
             wsa_buf.len = socket_buf_size;
+            from_len = sizeof(remote_endpoint.Addr());
             memset(&overlapped, 0, sizeof(overlapped));
         }
 
         OVERLAPPED overlapped;
         WSABUF wsa_buf;
+        Endpoint remote_endpoint;
+        int from_len;
         char buffer[socket_buf_size];
     };
 
@@ -74,7 +77,6 @@ public:
     void Send(Packet &packet, Endpoint &remote_endpoint, bool immediately);
     void Recv();
 
-    const Endpoint& GetRemoteEndpoint() { return remote_endpoint_; }
     const Endpoint& GetEndpoint() { return endpoint_; }
 
 private:
@@ -86,9 +88,7 @@ private:
     HANDLE iocp_;
 
     Endpoint endpoint_;
-    Endpoint remote_endpoint_;
 
-    int from_len;
     unsigned long received_bytes;
 
     /* TODO : change this to mt queue, ptr vs obj */

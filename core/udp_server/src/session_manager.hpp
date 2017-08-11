@@ -48,7 +48,7 @@ private:
     std::function<void(Session*)> ahandler_;
     std::function<void(Session*, Packet&)> phandler_;
 
-    /* TODO */
     std::map<Endpoint, Session*> sessions_;
+    std::map<Endpoint, Session*> pending_sessions_;
 };
 }
