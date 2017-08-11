@@ -19,32 +19,34 @@ private:
     friend class SessionManager;
     const static int socket_buf_size = 512;
     
-    struct read_io_data {
+    struct io_data {
+        OVERLAPPED overlapped;
+        WSABUF wsa_buf;
+        bool is_read_io_data;
+    };
+
+    struct read_io_data : io_data {
         read_io_data()
         {
             wsa_buf.buf = buffer;
             wsa_buf.len = socket_buf_size;
             from_len = sizeof(remote_endpoint.Addr());
+            is_read_io_data = true;
             memset(&overlapped, 0, sizeof(overlapped));
         }
-
-        OVERLAPPED overlapped;
-        WSABUF wsa_buf;
         Endpoint remote_endpoint;
         int from_len;
         char buffer[socket_buf_size];
     };
 
-    struct write_io_data {
+    struct write_io_data : io_data {
         write_io_data(Packet &packet)
         {
             wsa_buf.buf = (char*)packet.data_.get();
             wsa_buf.len = (unsigned short)packet.data_->size + 4;
+            is_read_io_data = false;
             memset(&overlapped, 0, sizeof(overlapped));
         }
-
-        OVERLAPPED overlapped;
-        WSABUF wsa_buf;
         std::shared_ptr<Packet::data> data_;
     };
 
@@ -81,8 +83,6 @@ public:
 
 private:
     bool is_with_iocp_;
-
-    read_io_data read_io_data_;
 
     SOCKET socket_;
     HANDLE iocp_;

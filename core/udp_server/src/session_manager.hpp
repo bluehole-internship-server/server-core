@@ -19,7 +19,13 @@ namespace core::udp {
 class SessionManager {
 public:
     SessionManager(Endpoint& endpoint, int num_thread);
-
+    ~SessionManager()
+    {
+        have_to_stop_ = true;
+        for (int i = 0; i < threads_.size(); i++) {
+            threads_[i].join();
+        }
+    }
     bool Run();
 
     inline void SetAcceptHandler(std::function<void(Session*)> &ahandler)
@@ -36,6 +42,9 @@ public:
     }
 
 private:
+    static const long wait_time = 3000;
+
+    bool have_to_stop_;
     HANDLE iocp_;
     void iocp_task();
     

@@ -51,9 +51,11 @@ void Socket::Recv()
 
     unsigned long flags = 0;
 
-    WSARecvFrom(socket_, &(read_io_data_.wsa_buf), 1, &received_bytes, &flags,
-        (sockaddr*)&(read_io_data_.remote_endpoint.Addr()),
-        &(read_io_data_.from_len), &(read_io_data_.overlapped), NULL);
+    read_io_data* _read_io_data = new read_io_data();
+
+    WSARecvFrom(socket_, &(_read_io_data->wsa_buf), 1, &received_bytes, &flags,
+        (sockaddr*)&(_read_io_data->remote_endpoint.Addr()),
+        &(_read_io_data->from_len), &(_read_io_data->overlapped), NULL);
 }
 
 void Socket::Send(Packet &packet, Endpoint &remote_endpoint, bool immediately)

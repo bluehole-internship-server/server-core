@@ -17,6 +17,7 @@ SessionManager::SessionManager(Endpoint& endpoint, int num_thread)
     else {
         socket_ = std::make_unique<Socket>(endpoint, iocp_);
     }
+    have_to_stop_ = false;
 }
 
 bool SessionManager::Run()
@@ -34,32 +35,33 @@ bool SessionManager::Run()
 
 void SessionManager::iocp_task()
 {
-    while (1) {
+    while (!have_to_stop_) {
         Socket* socket = nullptr;
-        Socket::read_io_data* io_data = nullptr;
+        Socket::io_data* io_data = nullptr;
         unsigned long bytes;
         bool succ = GetQueuedCompletionStatus(iocp_, &bytes,
-            (PULONG_PTR)&socket, (LPOVERLAPPED*)&io_data, INFINITE);
+            (PULONG_PTR)&socket, (LPOVERLAPPED*)&io_data, wait_time);
 
-        if (!succ || succ == 0) continue;
+        if (!succ) continue;
         if (bytes < 4) continue;
 
-        if (io_data == &socket->read_io_data_) {
+        if (io_data->is_read_io_data) {
+            Socket::read_io_data* read_io_data = reinterpret_cast<Socket::read_io_data*>(io_data);
             short size;
             short type;
-            size = *reinterpret_cast<short*>(io_data->buffer);
-            type = *reinterpret_cast<short*>(io_data->buffer + 2);
+            size = *reinterpret_cast<short*>(read_io_data->buffer);
+            type = *reinterpret_cast<short*>(read_io_data->buffer + 2);
 
             if (bytes == 6 && size == 2 && type == -1) { // SYN
                 Session* new_session = new Session(*socket_,
-                    io_data->remote_endpoint);
+                    read_io_data->remote_endpoint);
                 pending_sessions_.insert({new_session->GetEndpoint(), new_session});
                 // TODO : delete existing session
-                new_session->Send(Packet(2, -2, io_data->buffer + 4));
+                new_session->Send(Packet(2, -2, read_io_data->buffer + 4));
             }
             else if (bytes == 6 && size == 2 && type == -3) { // ACK
-                // Lock
-                auto it = pending_sessions_.find(io_data->remote_endpoint);
+                // Lock          
+                auto it = pending_sessions_.find(read_io_data->remote_endpoint);
                 if (it == pending_sessions_.end()) continue;
 
                 Session* pending_session = it->second;
@@ -72,14 +74,14 @@ void SessionManager::iocp_task()
             }
             else if (size + 4 == bytes) {
                 std::map<Endpoint, Session*>::iterator it;
-                it = sessions_.find(io_data->remote_endpoint);
+                it = sessions_.find(read_io_data->remote_endpoint);
                 if (it == sessions_.end()) continue;
-                phandler_(it->second, Packet(io_data->buffer));
+                phandler_(it->second, Packet(read_io_data->buffer));
             }
-
+            delete read_io_data;
             socket_->Recv();
         } else {
-            Socket::write_io_data* ptr = (Socket::write_io_data*)io_data;
+            Socket::write_io_data* ptr = reinterpret_cast<Socket::write_io_data*>(io_data);
             delete ptr;
         }
     }
