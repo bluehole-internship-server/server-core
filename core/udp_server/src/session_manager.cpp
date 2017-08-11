@@ -50,13 +50,14 @@ void SessionManager::iocp_task()
             size = *reinterpret_cast<short*>(io_data->buffer);
             type = *reinterpret_cast<short*>(io_data->buffer + 2);
 
-            if (bytes == 4 && size == 2 && type == -1) { // SYN
+            if (bytes == 6 && size == 2 && type == -1) { // SYN
                 Session* new_session = new Session(*socket_,
                     io_data->remote_endpoint);
                 pending_sessions_.insert({new_session->GetEndpoint(), new_session});
+                // TODO : delete existing session
                 new_session->Send(Packet(2, -2, io_data->buffer + 4));
             }
-            else if (bytes == 4 && size == 2 && type == -3) {
+            else if (bytes == 6 && size == 2 && type == -3) { // ACK
                 // Lock
                 auto it = pending_sessions_.find(io_data->remote_endpoint);
                 if (it == pending_sessions_.end()) continue;
