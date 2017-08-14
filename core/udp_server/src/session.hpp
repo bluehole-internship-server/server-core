@@ -12,6 +12,7 @@ public:
     Session(Socket &manager_socket, Endpoint &endpoint)
         : manager_socket_(manager_socket)
         , endpoint_(endpoint)
+        , is_alive_(0)
     {
 
     }
@@ -28,6 +29,10 @@ public:
     }
 
 private:
+    friend class SessionManager;
+
+    short is_alive_;
+
     void* data_;
     Socket &manager_socket_;
     Endpoint endpoint_;
