@@ -16,6 +16,8 @@
 
 #include "test_and_bench.h"
 
+#pragma comment(lib, "lock.lib")
+
 #define _64K 65536
 #define _32K 32768
 #define _16K 16384
