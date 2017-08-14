@@ -38,12 +38,10 @@ bool SessionManager::Run()
             std::this_thread::sleep_for(std::chrono::milliseconds(1000));
             mtx_sessions_.lock();
             for (auto session = sessions_.begin(); session != sessions_.end();) {
-                if (session->second->is_alive_ >= 0) {
-                    InterlockedDecrement16(&session->second->is_alive_);
-                }
-                else if (session->second->is_alive_ < -1) {
+                InterlockedDecrement16(&session->second->is_alive_);
+                if (session->second->is_alive_ < -1) {
                     disconnected.emplace_back(session->second);
-                    sessions_.erase(session);
+                    session = sessions_.erase(session);
                     continue;
                 }
                 session++;

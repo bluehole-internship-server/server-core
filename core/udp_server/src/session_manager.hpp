@@ -39,6 +39,7 @@ public:
     inline void SetDisconnectHandler(std::function<void(Session*)> &dhandler)
     {
         is_inited_all |= 0x10;
+        dhandler_ = dhandler;
     }
 
     inline void SetPacketHandler(std::function<void(Session*, Packet&)>
