@@ -20,8 +20,7 @@ public:
     bool Run();
     bool RunNonBlock();
     
-    inline void SetAcceptHandler(std::function<void(Session*)>
-        &ahandler)
+    inline void SetAcceptHandler(std::function<void(Session*)> &ahandler)
     {
         session_manager_.SetAcceptHandler(ahandler);
     }
@@ -30,6 +29,17 @@ public:
     {
         session_manager_.SetAcceptHandler(
             std::function<void(Session*)>(ahandler));
+    }
+
+    inline void SetDisconnectHandler(std::function<void(Session*)> &dhandler)
+    {
+        session_manager_.SetDisconnectHandler(dhandler);
+    }
+
+    inline void SetDisconnectHandler(void(*dhandler)(Session*))
+    {
+        session_manager_.SetDisconnectHandler(
+            std::function<void(Session*)>(dhandler));
     }
 
     inline void SetPacketHandler(std::function<void(Session*, Packet&)>

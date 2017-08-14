@@ -19,6 +19,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "udp_server", "udp_server\udp_server.vcxproj", "{891F64E1-267E-4A89-8E4B-5D8C4E49A226}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "reliable_join_test", "reliable_join_test\reliable_join_test.vcxproj", "{4C7CCEA0-8083-422A-B41C-DEB4A4A78E41}"
+	ProjectSection(ProjectDependencies) = postProject
+		{891F64E1-267E-4A89-8E4B-5D8C4E49A226} = {891F64E1-267E-4A89-8E4B-5D8C4E49A226}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

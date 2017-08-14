@@ -10,6 +10,7 @@
 #include <functional>
 #include <thread>
 #include <vector>
+#include <mutex>
 
 #include "session.hpp"
 #include "socket.hpp"
@@ -26,6 +27,7 @@ public:
             threads_[i].join();
         }
     }
+
     bool Run();
 
     inline void SetAcceptHandler(std::function<void(Session*)> &ahandler)
@@ -34,10 +36,15 @@ public:
         ahandler_ = ahandler;
     }
 
+    inline void SetDisconnectHandler(std::function<void(Session*)> &dhandler)
+    {
+        is_inited_all |= 0x10;
+    }
+
     inline void SetPacketHandler(std::function<void(Session*, Packet&)>
         &phandler)
     {
-        is_inited_all |= 0x10;
+        is_inited_all |= 0x100;
         phandler_ = phandler;
     }
 
@@ -53,11 +60,16 @@ private:
     std::vector<std::thread> threads_;
     int num_thread_;
 
-    char is_inited_all;
+    unsigned short is_inited_all;
+
     std::function<void(Session*)> ahandler_;
+    std::function<void(Session*)> dhandler_;
     std::function<void(Session*, Packet&)> phandler_;
 
     std::map<Endpoint, Session*> sessions_;
     std::map<Endpoint, Session*> pending_sessions_;
+
+    std::mutex mtx_sessions_;
+    std::mutex mtx_pending_sessions_;
 };
 }
