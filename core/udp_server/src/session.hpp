@@ -13,6 +13,7 @@ public:
         : manager_socket_(manager_socket)
         , endpoint_(endpoint)
         , is_alive_(0)
+        , data_(nullptr)
     {
 
     }
