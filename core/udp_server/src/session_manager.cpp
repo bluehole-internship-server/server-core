@@ -105,7 +105,7 @@ void SessionManager::iocp_task()
                 mtx_pending_sessions_.unlock();
                 // Unlock
                 
-                ahandler_(pending_session);
+                std::thread([&]() {ahandler_(pending_session); }).detach();
             }
             else if (bytes == 4 && size == 0 && type == -1) { // heart beat
                 mtx_sessions_.lock();
@@ -128,7 +128,7 @@ void SessionManager::iocp_task()
                 }
                 mtx_sessions_.unlock();
                 // Unlock
-                phandler_(it->second, Packet(read_io_data->buffer));
+                std::thread([&]() {phandler_(it->second, Packet(read_io_data->buffer)); }).detach();
             }
             delete read_io_data;
             socket_->Recv();

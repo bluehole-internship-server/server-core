@@ -17,7 +17,7 @@ public:
 
     }
 
-    void* Data() { return data_; }
+    void*& Data() { return data_; }
     void Send(Packet& packet)
     {
         manager_socket_.Send(packet, endpoint_, false);
