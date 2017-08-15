@@ -28,6 +28,9 @@ public:
     explicit Packet(short size, short packet_type);
     explicit Packet(const char* data);
 
+    void SetSize(short size) { data_->size = size; }
+    void SetType(short type) { data_->packet_type = type; }
+    
     short Size() { return data_->size; }
     short PacketType() { return data_->packet_type; }
     const char* Data() { return data_->body; }
