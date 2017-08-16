@@ -7,6 +7,7 @@
 #pragma once
 
 #pragma comment(lib, "lock.lib")
+#pragma comment(lib, "thread_manager.lib")
 
 #include <map>
 #include <functional>
@@ -15,6 +16,7 @@
 #include <mutex>
 
 #include "Spinlock.h"
+#include "ThreadPool.h"
 #include "memory_pool.hpp"
 
 #include "session.hpp"
@@ -24,7 +26,7 @@
 namespace core::udp {
 class SessionManager {
 public:
-    SessionManager(Endpoint& endpoint, int num_thread);
+    SessionManager(Endpoint& endpoint, int num_io_thread, int num_task_thread);
     ~SessionManager()
     {
         have_to_stop_ = true;
@@ -64,7 +66,8 @@ private:
     std::unique_ptr<Socket> socket_;
     
     std::vector<std::thread> threads_;
-    int num_thread_;
+    int num_io_thread_;
+    int num_task_thread_;
 
     unsigned short is_inited_all;
 
@@ -81,6 +84,7 @@ private:
     std::mutex mtx_sessions_;
     std::mutex mtx_pending_sessions_;
 
+    core::ThreadPool* thread_pool_;
     static core::ObjectPool<Session> session_pool_;
 };
 }

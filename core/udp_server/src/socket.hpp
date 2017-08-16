@@ -94,7 +94,7 @@ private:
 
     unsigned long received_bytes;
 
-    static core::ObjectPool<Socket::read_io_data> r_io_data_pool_;
-    static core::ObjectPool<Socket::write_io_data> w_io_data_pool_;
+    static core::ObjectPool<Socket::read_io_data, 614> r_io_data_pool_;
+    static core::ObjectPool<Socket::write_io_data, 78> w_io_data_pool_;
 };
 }

@@ -8,12 +8,14 @@ namespace core::udp {
 
 core::ObjectPool<Session> SessionManager::session_pool_;
 
-SessionManager::SessionManager(Endpoint& endpoint, int num_thread)
-    : num_thread_(num_thread)
+SessionManager::SessionManager(Endpoint& endpoint, int num_io_thread, int num_task_thread)
+    : num_io_thread_(num_io_thread)
+    , num_task_thread_(num_task_thread)
     , is_inited_all(0x00)
 {
     iocp_ = CreateIoCompletionPort(INVALID_HANDLE_VALUE,
-        NULL, NULL, num_thread_);
+        NULL, NULL, num_io_thread_);
+    thread_pool_ = new core::ThreadPool(num_task_thread);
     if (!iocp_) {
         is_inited_all = 0x1000;
     }
@@ -26,7 +28,7 @@ SessionManager::SessionManager(Endpoint& endpoint, int num_thread)
 bool SessionManager::Run()
 {
     if (is_inited_all != 0x0111) return false;
-    for (int i = 0; i < num_thread_; ++i) {
+    for (int i = 0; i < num_io_thread_; ++i) {
         threads_.emplace_back([this]() { 
             this->socket_->Recv();
             this->iocp_task();
@@ -115,8 +117,7 @@ void SessionManager::iocp_task()
                 sessions_.insert({pending_session->GetEndpoint(), pending_session});
                 lock_sessions_.Unlock();
                 // Unlock
-                
-                std::thread([&]() {ahandler_(pending_session); }).detach();
+                thread_pool_->Enqueue([&]() {ahandler_(pending_session); });
             }
             else if (bytes == 4 && size == 0 && type == -1) { // heart beat
                 lock_sessions_.ReadLock();
@@ -145,10 +146,9 @@ void SessionManager::iocp_task()
                 // have to be safe
                 
                 if (InterlockedIncrement16(&session->is_alive_) > -2) {
-                    std::thread([&]() 
-                    {
+                    thread_pool_->Enqueue([&]() {
                         phandler_(session, Packet(read_io_data->buffer));
-                    }).detach();
+                    });
                 }
             }
             Socket::r_io_data_pool_.Free(read_io_data);

@@ -14,7 +14,7 @@
 namespace core::udp {
 class Server {
 public:
-    explicit Server(short port, int num_thread);
+    explicit Server(short port, int num_io_thread, int num_task_thread);
     ~Server() = default;
     
     bool Run();

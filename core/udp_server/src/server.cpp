@@ -5,10 +5,9 @@
 #include "server.hpp"
 
 namespace core::udp {
-Server::Server(short port, int num_thread)
+Server::Server(short port, int num_io_thread, int num_task_thread)
     : port_(port)
-    , num_thread_(num_thread)
-    , session_manager_(Endpoint(port, "127.0.0.1"), num_thread)
+    , session_manager_(Endpoint(port, "127.0.0.1"), num_io_thread, num_task_thread)
 {
 }
 
