@@ -15,6 +15,7 @@
 #include <mutex>
 
 #include "Spinlock.h"
+#include "memory_pool.hpp"
 
 #include "session.hpp"
 #include "socket.hpp"
@@ -79,5 +80,7 @@ private:
 
     std::mutex mtx_sessions_;
     std::mutex mtx_pending_sessions_;
+
+    static core::ObjectPool<Session> session_pool_;
 };
 }

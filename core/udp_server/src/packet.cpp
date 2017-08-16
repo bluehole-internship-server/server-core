@@ -18,7 +18,7 @@ Packet::Packet(Packet &&packet)
 }
 
 Packet::Packet(short size, short packet_type, const char* data)
-    : data_(std::make_shared<Packet::data>())
+    : data_((Packet::data*)data_pool_.Malloc(), Packet::delete_data)
 {
     if ((unsigned short)size > MAX_PACKET_SIZE) return;
     data_->size = size;
@@ -27,7 +27,7 @@ Packet::Packet(short size, short packet_type, const char* data)
 }
 
 Packet::Packet(short size, short packet_type)
-    : data_(std::make_shared<Packet::data>())
+    : data_((Packet::data*)data_pool_.Malloc(), Packet::delete_data)
 {
     if (size > MAX_PACKET_SIZE) return;
     data_->size = size;
@@ -35,7 +35,7 @@ Packet::Packet(short size, short packet_type)
 }
 
 Packet::Packet(const char* data)
-    : data_(std::make_shared<Packet::data>())
+    : data_((Packet::data*)data_pool_.Malloc(), Packet::delete_data)
 {
     data_->size = *reinterpret_cast<const short*>(data);
     data_->packet_type = *reinterpret_cast<const short*>(data + sizeof(short));

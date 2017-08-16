@@ -51,7 +51,7 @@ void Socket::Recv()
 
     unsigned long flags = 0;
 
-    read_io_data* _read_io_data = new read_io_data();
+    read_io_data* _read_io_data = new(r_io_data_pool_.Malloc()) read_io_data();
 
     WSARecvFrom(socket_, &(_read_io_data->wsa_buf), 1, &received_bytes, &flags,
         (sockaddr*)&(_read_io_data->remote_endpoint.Addr()),
@@ -65,7 +65,9 @@ void Socket::Send(Packet &packet, Endpoint &remote_endpoint, bool immediately)
 
     unsigned long flags = 0;
 
-    write_io_data* _write_io_data = new write_io_data(packet);
+    write_io_data* _write_io_data = new(w_io_data_pool_.Malloc())
+        write_io_data(packet);
+
     WSASendTo(socket_, &(_write_io_data->wsa_buf), 1, nullptr, flags,
         (sockaddr*)&remote_endpoint.Addr(), sizeof(remote_endpoint.Addr()),
         &(_write_io_data->overlapped), nullptr);

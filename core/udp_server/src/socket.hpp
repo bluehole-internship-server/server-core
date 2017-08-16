@@ -10,6 +10,8 @@
 
 #include <windows.h>
 
+#include "memory_pool.hpp"
+
 #include "packet.hpp"
 #include "endpoint.hpp"
 
@@ -92,8 +94,7 @@ private:
 
     unsigned long received_bytes;
 
-    /* TODO : change this to mt queue, ptr vs obj */
-    std::queue<send_request> send_req_queue_;
-    std::mutex mtx_send_req_queue_;
+    static core::ObjectPool<Socket::read_io_data> r_io_data_pool_;
+    static core::ObjectPool<Socket::write_io_data> w_io_data_pool_;
 };
 }

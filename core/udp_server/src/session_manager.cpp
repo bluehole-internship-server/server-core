@@ -82,7 +82,7 @@ void SessionManager::iocp_task()
             type = *reinterpret_cast<short*>(read_io_data->buffer + 2);
 
             if (bytes == 6 && size == 2 && type == -1) { // SYN
-                Session* new_session = new Session(*socket_,
+                Session* new_session = new(session_pool_.Malloc()) Session(*socket_,
                     read_io_data->remote_endpoint);
                 
                 // Lock
@@ -148,11 +148,11 @@ void SessionManager::iocp_task()
                     }).detach();
                 }
             }
-            delete read_io_data;
+            Socket::r_io_data_pool_.Free(read_io_data);
             socket_->Recv();
         } else {
             Socket::write_io_data* ptr = reinterpret_cast<Socket::write_io_data*>(io_data);
-            delete ptr;
+            Socket::w_io_data_pool_.Free(ptr);
         }
     }
 }
