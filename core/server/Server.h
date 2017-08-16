@@ -58,7 +58,7 @@ public:
 	static LPFN_ACCEPTEX AcceptEx;
 	static LPFN_CONNECTEX ConnectEx;
 	static char accept_buffer_[64];
-	static ObjectPool<IoContext> * io_context_pool_;
+	static ObjectPool<IoContext, 70> * io_context_pool_;
 
 private:
 	static ThreadPool *thread_pool_;
