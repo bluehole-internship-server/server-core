@@ -5,6 +5,10 @@
 #include "socket.hpp"
 
 namespace core::udp {
+
+core::ObjectPool<Socket::read_io_data> Socket::r_io_data_pool_;
+core::ObjectPool<Socket::write_io_data> Socket::w_io_data_pool_;
+
 Socket::Socket(Endpoint &endpoint)
     : endpoint_(endpoint)
     , iocp_(nullptr)

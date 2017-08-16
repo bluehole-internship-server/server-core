@@ -5,6 +5,9 @@
 #include "session_manager.hpp"
 
 namespace core::udp {
+
+core::ObjectPool<Session> SessionManager::session_pool_;
+
 SessionManager::SessionManager(Endpoint& endpoint, int num_thread)
     : num_thread_(num_thread)
     , is_inited_all(0x00)

@@ -7,6 +7,9 @@
 #include "packet.hpp"
 
 namespace core::udp {
+
+core::ObjectPool<Packet::data> Packet::data_pool_;
+
 Packet::Packet(Packet &packet)
     : data_(packet.data_)
 {
