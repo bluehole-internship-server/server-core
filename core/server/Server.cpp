@@ -98,7 +98,19 @@ VOID Server::IocpWork(Server &server)
 		IoContext * io_context = nullptr;
 		ULONG_PTR key = 0;
 		BOOL io_result = false;
-		GetQueuedCompletionStatus(server.completion_port_, &received_bytes, (PULONG_PTR)&key, (LPOVERLAPPED *)&io_context, INFINITE);
+		BOOL gqcs_result = GetQueuedCompletionStatus(server.completion_port_, &received_bytes, (PULONG_PTR)&key, (LPOVERLAPPED *)&io_context, 100);
+		
+		if (gqcs_result == 0 || received_bytes == 0) {
+            if (io_context == nullptr && GetLastError() == WAIT_TIMEOUT) {
+                server.TimeoutHandler(io_context);
+				continue;
+            }
+            else if (io_context->io_type_ == IO_RECV || io_context->io_type_ == IO_SEND) {
+                io_context->client_->Disconnect();
+				continue;
+            }
+        }
+
 		io_context->received_ = received_bytes;
 		auto client = io_context->client_;
 		switch (io_context->io_type_) {
@@ -166,6 +178,10 @@ VOID Server::SetPacketHeaderSize(USHORT size)
 {
 	packet_header_size_ = size;
 }
+VOID Server::SetTimeoutHandler(std::function<void(IoContext*)> handler)
+{
+	timeout_handler_ = std::move(handler);
+}
 VOID Server::SetPreAcceptHandler(std::function<void(IoContext *)> handler)
 {
 	pre_accept_handler_ = std::move(handler);
@@ -197,6 +213,11 @@ VOID Server::SetPostSendHandler(std::function<void(IoContext *)> handler)
 VOID Server::SetPostDisconnectHandler(std::function<void(IoContext *)> handler)
 {
 	post_disconnect_handler_ = std::move(handler);
+}
+VOID Server::TimeoutHandler(IoContext * io_context)
+{
+	if (timeout_handler_ != nullptr)
+		timeout_handler_(io_context);
 }
 VOID Server::PreAcceptHandler(IoContext * io_context)
 {
