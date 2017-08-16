@@ -34,9 +34,8 @@ bool SessionManager::Run()
     threads_.emplace_back([this]() {
         std::vector<Session*> disconnected;
         while (true) {
-            disconnected.clear();
-            std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-            mtx_sessions_.lock();
+            std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+            lock_sessions_.Lock();
             for (auto session = sessions_.begin(); session != sessions_.end();) {
                 InterlockedDecrement16(&session->second->is_alive_);
                 if (session->second->is_alive_ < -1) {
@@ -46,10 +45,16 @@ bool SessionManager::Run()
                 }
                 session++;
             }
-            mtx_sessions_.unlock();
+            lock_sessions_.Unlock();
 
-            for (auto &session : disconnected) {
-                dhandler_(session);
+            for (auto session = disconnected.begin(); session != disconnected.end();) {
+                if (InterlockedDecrement16(&(*session)->is_alive_) == -3) {
+                    dhandler_((*session));
+                    delete (*session);
+                    session = disconnected.erase(session);
+                    continue;
+                }
+                session++;
             }
         }
     });
@@ -81,54 +86,67 @@ void SessionManager::iocp_task()
                     read_io_data->remote_endpoint);
                 
                 // Lock
-                mtx_pending_sessions_.lock();
+                lock_pending_sessions_.Lock();
                 pending_sessions_.insert({new_session->GetEndpoint(), new_session});
-                mtx_pending_sessions_.unlock();
+                lock_pending_sessions_.Unlock();
                 // Unlock
 
                 new_session->Send(Packet(2, -2, read_io_data->buffer + 4));
             }
             else if (bytes == 6 && size == 2 && type == -3) { // ACK
                 // Lock          
-                mtx_pending_sessions_.lock();
+                lock_pending_sessions_.ReadLock();
                 auto it = pending_sessions_.find(read_io_data->remote_endpoint);
                 if (it == pending_sessions_.end()) {
-                    mtx_pending_sessions_.unlock();
+                    lock_pending_sessions_.ReadUnlock();
                     continue;
                 }
                 Session* pending_session = it->second;
+                lock_pending_sessions_.ReadUnlock();
 
+                lock_pending_sessions_.Lock();
                 pending_sessions_.erase(it);
-                mtx_sessions_.lock();
+                lock_pending_sessions_.Unlock();
+
+                lock_sessions_.Lock();
                 sessions_.insert({pending_session->GetEndpoint(), pending_session});
-                mtx_sessions_.unlock();
-                mtx_pending_sessions_.unlock();
+                lock_sessions_.Unlock();
                 // Unlock
                 
                 std::thread([&]() {ahandler_(pending_session); }).detach();
             }
             else if (bytes == 4 && size == 0 && type == -1) { // heart beat
-                mtx_sessions_.lock();
+                lock_sessions_.ReadLock();
                 auto it = sessions_.find(read_io_data->remote_endpoint);
                 if (it == sessions_.end()) {
-                    mtx_sessions_.unlock();
+                    lock_sessions_.ReadUnlock();
                     continue;
                 }
-                mtx_sessions_.unlock();
-                InterlockedIncrement16(&it->second->is_alive_);
+                Session* session = it->second;
+                lock_sessions_.ReadUnlock();
+                InterlockedIncrement16(&session->is_alive_);
             }
             else if (size + 4 == bytes) {
                 std::map<Endpoint, Session*>::iterator it;
                 // Lock
-                mtx_sessions_.lock();
+                lock_sessions_.ReadLock();
                 it = sessions_.find(read_io_data->remote_endpoint);
                 if (it == sessions_.end()) {
-                    mtx_sessions_.unlock();
+                    lock_sessions_.ReadUnlock();
                     continue;
                 }
-                mtx_sessions_.unlock();
+                Session* session = it->second;
+                lock_sessions_.ReadUnlock();
                 // Unlock
-                std::thread([&]() {phandler_(it->second, Packet(read_io_data->buffer)); }).detach();
+
+                // have to be safe
+                
+                if (InterlockedIncrement16(&session->is_alive_) > -2) {
+                    std::thread([&]() 
+                    {
+                        phandler_(session, Packet(read_io_data->buffer));
+                    }).detach();
+                }
             }
             delete read_io_data;
             socket_->Recv();
