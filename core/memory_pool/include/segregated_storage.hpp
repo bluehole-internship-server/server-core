@@ -5,6 +5,9 @@
 #pragma once
 
 #include <cstddef>
+#include <cassert>
+
+#include "Spinlock.h"
 
 #include <cassert>
 #include "Spinlock.h"
