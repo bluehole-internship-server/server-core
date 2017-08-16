@@ -9,6 +9,9 @@
 
 #include "Spinlock.h"
 
+#include <cassert>
+#include "Spinlock.h"
+
 namespace core {
 
 class Pool;

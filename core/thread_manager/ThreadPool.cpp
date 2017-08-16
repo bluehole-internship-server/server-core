@@ -12,7 +12,7 @@ namespace core
 				for (;;) {
 					std::function<void()> task = nullptr;
 					{
-						SpinlockGuard lockGuard(spinlock_);
+						ExclusiveLockHolder lock_holder(spinlock_);
 						if (stop && tasks_.empty()) {
 							return;
 						}
@@ -31,7 +31,7 @@ namespace core
 	ThreadPool::~ThreadPool()
 	{
 		{
-			SpinlockGuard lockGuard(spinlock_);
+			ExclusiveLockHolder lock_holder(spinlock_);
 			stop = true;
 		}
 		for (auto &w : workers_)
