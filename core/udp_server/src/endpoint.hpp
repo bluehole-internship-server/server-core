@@ -12,7 +12,7 @@ namespace core::udp {
 class Endpoint {
 public:
     // IP has to point raw string literal
-    Endpoint(short port, const char* IP)
+    Endpoint(unsigned short port, const char* IP)
         : port_(port)
         , IP_(IP)
     {
@@ -37,14 +37,14 @@ public:
             this->addr_.sin_port == rep.addr_.sin_port;
     }
 
-    inline short Port() { return port_; }
+    inline unsigned short Port() { return port_; }
     inline const char* IP() { return IP_; }
     inline sockaddr_in& Addr() { return addr_; }
 
 private:
     sockaddr_in addr_;
 
-    short port_;
+    unsigned short port_;
     const char* IP_;
 };
 }

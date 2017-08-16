@@ -42,6 +42,7 @@ private:
     struct write_io_data : io_data {
         write_io_data(Packet &packet)
         {
+            data_ = packet.data_;
             wsa_buf.buf = (char*)packet.data_.get();
             wsa_buf.len = (unsigned short)packet.data_->size + 4;
             is_read_io_data = false;
