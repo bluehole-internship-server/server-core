@@ -6,6 +6,7 @@
 
 #include <cstddef>
 
+#include <cassert>
 #include "Spinlock.h"
 
 namespace core {
