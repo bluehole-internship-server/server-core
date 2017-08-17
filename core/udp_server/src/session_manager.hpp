@@ -6,11 +6,16 @@
 
 #pragma once
 
+#pragma comment(lib, "lock.lib")
+
 #include <map>
 #include <functional>
 #include <thread>
 #include <vector>
 #include <mutex>
+
+#include "Spinlock.h"
+#include "memory_pool.hpp"
 
 #include "session.hpp"
 #include "socket.hpp"
@@ -70,7 +75,12 @@ private:
     std::map<Endpoint, Session*> sessions_;
     std::map<Endpoint, Session*> pending_sessions_;
 
+    core::Spinlock lock_sessions_;
+    core::Spinlock lock_pending_sessions_;
+
     std::mutex mtx_sessions_;
     std::mutex mtx_pending_sessions_;
+
+    static core::ObjectPool<Session> session_pool_;
 };
 }

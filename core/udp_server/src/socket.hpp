@@ -10,6 +10,8 @@
 
 #include <windows.h>
 
+#include "memory_pool.hpp"
+
 #include "packet.hpp"
 #include "endpoint.hpp"
 
@@ -42,6 +44,7 @@ private:
     struct write_io_data : io_data {
         write_io_data(Packet &packet)
         {
+            data_ = packet.data_;
             wsa_buf.buf = (char*)packet.data_.get();
             wsa_buf.len = (unsigned short)packet.data_->size + 4;
             is_read_io_data = false;
@@ -91,8 +94,7 @@ private:
 
     unsigned long received_bytes;
 
-    /* TODO : change this to mt queue, ptr vs obj */
-    std::queue<send_request> send_req_queue_;
-    std::mutex mtx_send_req_queue_;
+    static core::ObjectPool<Socket::read_io_data, 614> r_io_data_pool_;
+    static core::ObjectPool<Socket::write_io_data, 78> w_io_data_pool_;
 };
 }

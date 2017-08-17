@@ -9,6 +9,8 @@
 
 #include <memory>
 
+#include "memory_pool.hpp"
+
 namespace core::udp {
 class Packet {
 private:
@@ -38,5 +40,8 @@ public:
 private:
     friend class Socket;
     std::shared_ptr<data> data_;
+
+    static core::ObjectPool<data> data_pool_;
+    static void delete_data(data* _data) { data_pool_.Free(_data); }
 };
 }
