@@ -5,7 +5,6 @@ LPFN_DISCONNECTEX core::Server::DisconnectEx = nullptr;
 LPFN_ACCEPTEX core::Server::AcceptEx = nullptr;
 LPFN_CONNECTEX core::Server::ConnectEx = nullptr;
 char core::Server::accept_buffer_[64] = { 0, };
-core::ThreadPool * core::Server::thread_pool_ = nullptr;
 core::ObjectPool<core::IoContext, 70> * core::Server::io_context_pool_ = nullptr;
 
 namespace core 
@@ -68,8 +67,8 @@ VOID Server::Init()
 	 
 	// Create New Thread Pool
 	if (thread_pool_ == nullptr) {
-		thread_pool_ = new ThreadPool(WORKER_AMOUNT + 10);
-		for (int i = 0; i < WORKER_AMOUNT; ++i)
+		thread_pool_ = new ThreadPool(worker_amount_);
+		for (int i = 0; i < iocp_worker_amount_; ++i)
 			thread_pool_->Enqueue(IocpWork, *this);
 	}
 	
@@ -107,6 +106,7 @@ VOID Server::IocpWork(Server &server)
             }
             else if (io_context->io_type_ == IO_RECV || io_context->io_type_ == IO_SEND) {
                 io_context->client_->Disconnect();
+				io_context_pool_->Destroy(io_context);
 				continue;
             }
         }
@@ -177,6 +177,14 @@ VOID Server::Run()
 VOID Server::SetPacketHeaderSize(USHORT size)
 {
 	packet_header_size_ = size;
+}
+VOID Server::SetWorkerAmount(USHORT amount)
+{
+	worker_amount_ = amount;
+}
+VOID Server::SetIocpWorkerAmount(USHORT amount)
+{
+	iocp_worker_amount_ = amount;
 }
 VOID Server::SetTimeoutHandler(std::function<void(IoContext*)> handler)
 {

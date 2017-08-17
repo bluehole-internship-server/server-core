@@ -15,7 +15,8 @@
 #include "ClientManager.h"
 #include "memory_pool.hpp"
 
-#define WORKER_AMOUNT 8
+#define DEFAULT_WORKER_AMOUNT 16
+#define DEFAULT_IOCP_WORKER_AMOUNT 14
 #define DEFAULT_PACKET_HEADER_SIZE 2
 
 namespace core
@@ -35,6 +36,8 @@ public:
 	VOID Run();
 
 	VOID SetPacketHeaderSize(USHORT size);
+	VOID SetWorkerAmount(USHORT);
+	VOID SetIocpWorkerAmount(USHORT);
 	VOID SetTimeoutHandler(std::function<void(IoContext *)>);
 	VOID SetPreAcceptHandler(std::function<void(IoContext *)>);
 	VOID SetPreReceiveHandler(std::function<void(IoContext *)>);
@@ -64,11 +67,13 @@ public:
 	static ObjectPool<IoContext, 70> * io_context_pool_;
 
 private:
-	static ThreadPool *thread_pool_;
+	ThreadPool *thread_pool_ = nullptr;
 	ClientManager * client_manager_;
 	HANDLE completion_port_;
 	SOCKET listen_socket_;
 	USHORT listen_port_;
+	USHORT worker_amount_ = DEFAULT_WORKER_AMOUNT;
+	USHORT iocp_worker_amount_ = DEFAULT_IOCP_WORKER_AMOUNT;
 	std::function<void(IoContext *)> timeout_handler_;
 	std::function<void(IoContext *)> pre_accept_handler_;
 	std::function<void(IoContext *)> pre_receive_handler_;
